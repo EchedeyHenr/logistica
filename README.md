@@ -91,22 +91,25 @@ Este alcance permite desarrollar un sistema coherente y completo a nivel de lóg
 
 ## Arbol del proyecto
 
-logistica/
-├── __init__.py
-├── main.py                 
-├── presentation/           
-│   ├── __init__.py
-│   └── menu.py             
-├── application/            
-│   ├── __init__.py
-│   └── services.py        # Lógica para crear rutas y asignarles envíos
-├── domain/                 
-│   ├── __init__.py
-│   ├── shipment.py            # Clase base 'Envio'
-│   ├── shipment_types.py      # EnvioEstandar, EnvioExpres, EnvioFragil
-│   ├── center.py           # Clase CentroLogistico (donde se originan las rutas)
-│   ├── route.py             # Clase Ruta (agrupa envíos y gestiona el transporte)
-│   └── repository.py 
-└── infrastructure/         
-    ├── __init__.py
-    └── memory.py          # Repositorios para Envíos, Centros y Rutas
+```
+📦logistica
+ ┣ 📜__init__.py
+ ┣ 📜main.py
+ ┣ 📂presentation
+ ┃ ┣ 📜__init__.py
+ ┃ ┗ 📜menu.py
+ ┣ 📂application
+ ┃ ┣ 📜__init__.py
+ ┃ ┗ 📜services.py           # Lógica para crear rutas y asignarles envíos
+ ┣ 📂domain
+ ┃ ┣ 📜__init__.py
+ ┃ ┣ 📜shipment.py           # Clase base "Envio"
+ ┃ ┣ 📜shipment_types.py     # EnvioEstandar, EnvioExpress, EnvioFragil
+ ┃ ┣ 📜center.py             # Clase CentroLogistico (donde se originan las rutas)
+ ┃ ┣ 📜route.py              # Clase Ruta (agrupa envios y gestiona el transporte
+ ┃ ┗ 📜repository.py
+ ┗ 📂infrastructure
+   ┣ 📜__init__.py
+   ┗ 📜memory.py             # Repositorios para Envios, Centros y Rutas
+```
+
