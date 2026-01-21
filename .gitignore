@@ -1,0 +1,13 @@
+# Entornos virtuales
+venv/
+.env
+__pycache__/
+*.py[cod]
+
+# Configuración de PyCharm
+.idea/
+
+# Distribución / Paquetes
+dist/
+build/
+*.egg-info/
