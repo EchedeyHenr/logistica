@@ -1,4 +1,5 @@
 # domain/route.py
+from logisticaEnvios.domain.shipment import Shipment
 
 class Route:
     def __init__(self, route_id, origin_center, destination_center):
@@ -25,13 +26,23 @@ class Route:
         return self._active
 
     def add_shipment(self, shipment):
-        pass
+        if not self.is_active:
+            raise ValueError("La ruta no está activa.")
+        self._shipments.append(shipment)
+        shipment.assign_route(self.route_id)
 
     def remove_shipment(self, shipment):
-        pass
+        self._shipments.remove(shipment)
+        shipment.remove_route()
 
     def complete_route(self):
-        pass
+        if not self._active:
+            raise ValueError("La ruta no está activa.")
+        self._active = False
+
+        for shipment in self._shipments:
+            self.__destination_center.receive_shipment(shipment)
+        self._shipments.clear()
 
     def list_shipment(self):
-        pass
+        return self._shipments.copy()
