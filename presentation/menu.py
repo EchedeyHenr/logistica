@@ -1,6 +1,6 @@
 # presentation/menu.py
-from logistica.application.services import Services
-from logistica.infrastructure.memory import ShipmentRepositoryMemory
+from logisticaEnvios.application.services import Services
+from logisticaEnvios.infrastructure.memory import ShipmentRepositoryMemory
 
 def mostrar_menu():
     print("\n=== LOGÍSTICA - GESTIÓN DE ENVÍOS ===")

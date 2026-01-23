@@ -1,6 +1,6 @@
 # infrastructure/memory.py
-from logistica.domain.repository import Repository
-from logistica.domain.shipment import Shipment
+from logisticaEnvios.domain.repository import Repository
+from logisticaEnvios.domain.shipment import Shipment
 
 class ShipmentRepositoryMemory(Repository):
     def __init__(self):

@@ -1,7 +1,7 @@
 # application/services.py
 
-from logistica.domain.shipment import Shipment
-from logistica.domain.repository import Repository
+from logisticaEnvios.domain.shipment import Shipment
+from logisticaEnvios.domain.repository import Repository
 
 class Services:
     def __init__(self, repo):

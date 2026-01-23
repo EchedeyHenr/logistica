@@ -1,8 +1,8 @@
 # test_repositorio_memoria.py
 # Script para probar ShipmentRepositoryMemory con casos posibles
 
-from logistica.domain.shipment import Shipment
-from logistica.infrastructure.memory import ShipmentRepositoryMemory
+from logisticaEnvios.domain.shipment import Shipment
+from logisticaEnvios.infrastructure.memory import ShipmentRepositoryMemory
 
 # Crear el repositorio
 repo = ShipmentRepositoryMemory()
