@@ -1,6 +1,6 @@
 # presentation/menu.py
-from logisticaEnvios.application.services import Services
-from logisticaEnvios.infrastructure.memory import ShipmentRepositoryMemory
+from logisticaEnvios.application.shipment_service import ShipmentService
+from logisticaEnvios.infrastructure.memory_shipment import ShipmentRepositoryMemory
 from logisticaEnvios.infrastructure.seed_data import seed_repository
 
 def mostrar_menu():
@@ -18,7 +18,7 @@ def mostrar_menu():
 def main():
 #    repo = ShipmentRepositoryMemory()
     repo = seed_repository()
-    servicio = Services(repo)
+    servicio = ShipmentService(repo)
 
     while True:
         mostrar_menu()

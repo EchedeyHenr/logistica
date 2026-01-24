@@ -1,8 +1,8 @@
 # infrastructure/memory.py
-from logisticaEnvios.domain.repository import Repository
+from logisticaEnvios.domain.shipment_repository import ShipmentRepository
 from logisticaEnvios.domain.shipment import Shipment
 
-class ShipmentRepositoryMemory(Repository):
+class ShipmentRepositoryMemory(ShipmentRepository):
     def __init__(self):
         self._by_tracking_code = {}
 

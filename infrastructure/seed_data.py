@@ -1,7 +1,7 @@
 # infrastructure/seed_data.py
 
 from logisticaEnvios.domain.shipment import Shipment
-from logisticaEnvios.infrastructure.memory import ShipmentRepositoryMemory
+from logisticaEnvios.infrastructure.memory_shipment import ShipmentRepositoryMemory
 
 def seed_repository():
     repo = ShipmentRepositoryMemory()

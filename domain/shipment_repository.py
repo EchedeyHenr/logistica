@@ -1,6 +1,6 @@
 # domain/repository.py
-#from logisticaEnvios.domain.shipment import Shipment
-class Repository:
+
+class ShipmentRepository:
     def add(self, shipment):
         raise NotImplementedError
 

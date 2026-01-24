@@ -1,9 +1,9 @@
 # application/services.py
 
 from logisticaEnvios.domain.shipment import Shipment
-from logisticaEnvios.domain.repository import Repository
+from logisticaEnvios.domain.shipment_repository import ShipmentRepository
 
-class Services:
+class ShipmentService:
     def __init__(self, repo):
         self._repo = repo
 

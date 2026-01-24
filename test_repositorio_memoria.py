@@ -2,7 +2,7 @@
 # Script para probar ShipmentRepositoryMemory con casos posibles
 
 from logisticaEnvios.domain.shipment import Shipment
-from logisticaEnvios.infrastructure.memory import ShipmentRepositoryMemory
+from logisticaEnvios.infrastructure.memory_shipment import ShipmentRepositoryMemory
 
 # Crear el repositorio
 repo = ShipmentRepositoryMemory()
