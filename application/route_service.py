@@ -51,15 +51,21 @@ class RouteService:
         if route is None:
             raise ValueError("No existe una ruta con ese identificador.")
 
+        if not route.is_active:
+            raise ValueError("La ruta no está activa.")
+
         shipment = self._shipment_repo.get_by_tracking_code(tracking_code)
         if shipment is None:
             raise ValueError("No hay ningún envío con ese código.")
 
-        if not route.is_active:
-            raise ValueError("La ruta no está activa.")
+        if shipment.is_assigned_to_route():
+            raise ValueError("El envío ya está asignado a una ruta.")
 
         route.add_shipment(shipment)
+        shipment.assign_route(route_id)
+
         self._route_repo.add(route)
+        self._shipment_repo.add(shipment)
 
 
     def remove_shipment_from_route(self, tracking_code, route_id):
@@ -71,8 +77,14 @@ class RouteService:
         if shipment is None:
             raise ValueError("No hay ningún envío con ese código.")
 
+        if shipment.assigned_route != route_id:
+            raise ValueError("El envío no está asignado a esta ruta.")
+
         route.remove_shipment(shipment)
+        shipment.remove_route()
+
         self._route_repo.add(route)
+        self._shipment_repo.add(shipment)
 
 
     def dispatch_route(self, route_id):
