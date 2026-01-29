@@ -159,10 +159,8 @@ def main():
             elif opcion == "13":
                 routes = route_service.list_routes()
 
-                for route_id, origin_center_id, destination_center_id in routes:
-                    estado = "Activa" if route_service.get_route(route_id).is_active else "Finalizada"
-                    origin, destination = origin_center_id.center_id, destination_center_id.center_id
-                    print(f"- {route_id} | Origen: {origin} | Destino: {destination} | Estado: {estado}")
+                for route_id, origin_center_id, destination_center_id, status in routes:
+                    print(f"- {route_id} | Origen: {origin_center_id} | Destino: {destination_center_id} | Estado: {status}")
 
 
             elif opcion == "14":

@@ -11,7 +11,7 @@ class ShipmentService:
 
     def register_shipment(self, tracking_code, sender, recipient, priority=1):
         if self._repo.get_by_tracking_code(tracking_code) is not None:
-            raise ValueError("Ya existe un envío con ese código.")
+            raise ValueError(f"Ya existe un envío con el código de seguimiento '{tracking_code}'.")
         shipment = Shipment(tracking_code, sender, recipient, priority)
         self._repo.add(shipment)
 
@@ -19,7 +19,7 @@ class ShipmentService:
     def update_shipment_status(self, tracking_code, new_status):
         shipment = self._repo.get_by_tracking_code(tracking_code)
         if shipment is None:
-            raise ValueError("No hay ningún envío con ese código")
+            raise ValueError(f"No hay ningún envío con el código de seguimiento '{tracking_code}'.")
         shipment.update_status(new_status)
         self._repo.add(shipment)
 
@@ -27,7 +27,7 @@ class ShipmentService:
     def increase_shipment_priority(self, tracking_code):
         shipment = self._repo.get_by_tracking_code(tracking_code)
         if shipment is None:
-            raise ValueError("No hay ningún envío con ese código")
+            raise ValueError(f"No hay ningún envío con el código de seguimiento '{tracking_code}'.")
         shipment.increase_priority()
         self._repo.add(shipment)
 
@@ -35,7 +35,7 @@ class ShipmentService:
     def decrease_shipment_priority(self, tracking_code):
         shipment = self._repo.get_by_tracking_code(tracking_code)
         if shipment is None:
-            raise ValueError("No hay ningún envío con ese código")
+            raise ValueError(f"No hay ningún envío con el código de seguimiento '{tracking_code}'.")
         shipment.decrease_priority()
         self._repo.add(shipment)
 
@@ -56,5 +56,5 @@ class ShipmentService:
     def get_shipment(self, tracking_code):
         shipment = self._repo.get_by_tracking_code(tracking_code)
         if shipment is None:
-            raise ValueError("No existe el envío")
+            raise ValueError(f"No existe el envío con código de seguimiento '{tracking_code}'.")
         return shipment

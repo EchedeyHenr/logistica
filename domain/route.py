@@ -3,9 +3,14 @@ from logisticaEnvios.domain.shipment import Shipment
 
 class Route:
     def __init__(self, route_id, origin_center, destination_center):
+        if origin_center is None or destination_center is None:
+            raise ValueError("Los centros de origen y destino deben estar definidos.")
+        if origin_center == destination_center:
+            raise ValueError("El centro de origen y destino no pueden ser el mismo.")
+
         self.__route_id = route_id
-        self.__origin_center = origin_center                    # LogisticCenter
-        self.__destination_center = destination_center          # LogisticCenter
+        self.__origin_center = origin_center
+        self.__destination_center = destination_center
         self._shipments = []
         self._active = True
 
@@ -31,6 +36,8 @@ class Route:
         self._shipments.append(shipment)
         shipment.assign_route(self.route_id)
 
+        self.origin_center.receive_shipment(shipment)
+
     def remove_shipment(self, shipment):
         self._shipments.remove(shipment)
         shipment.remove_route()
@@ -42,6 +49,7 @@ class Route:
 
         for shipment in self._shipments:
             self.__destination_center.receive_shipment(shipment)
+            shipment.update_status("DELIVERED")
         self._shipments.clear()
 
     def list_shipment(self):

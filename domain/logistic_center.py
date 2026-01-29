@@ -3,6 +3,13 @@ from logisticaEnvios.domain.shipment import Shipment
 
 class LogisticCenter:
     def __init__(self, center_id, name, location):
+        if not center_id or not isinstance(center_id, str):
+            raise ValueError("El ID del centro no puede estar vacío.")
+        if not name or not isinstance(name, str):
+            raise ValueError("El nombre del centro no puede estar vacío.")
+        if not location or not isinstance(location, str):
+            raise ValueError("La ubicación del centro no puede estar vacía.")
+
         self.__center_id = center_id
         self.__name = name
         self.__location = location
