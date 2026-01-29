@@ -9,23 +9,26 @@ from logisticaEnvios.infrastructure.seed_data import seed_repository
 
 def mostrar_menu():
     print("\n=== LOGÍSTICA - GESTIÓN DE ENVÍOS ===")
+    print("\n=== APARTADO - ENVÍOS ===")
     print("1. Registrar envío")
     print("2. Asignar envío a ruta")
     print("3. Quitar envío de ruta")
     print("4. Actualizar estado de envío")
-    print("5. Aumentar prioridad")
-    print("6. Disminuir prioridad")
+    print("5. Aumentar prioridad del envío")
+    print("6. Disminuir prioridad del envío")
     print("7. Listar envíos")
     print("8. Ver detalles de un envío")
+    print("\n=== APARTADO - CENTROS LOGÍSTICOS ===")
     print("9. Registrar centro logístico")
     print("10. Listar centro logístico")
     print("11. Ver envíos en un centro")
+    print("\n=== APARTADO - RUTAS ===")
     print("12. Crear ruta")
     print("13. Listar rutas")
     print("14. Asignar varios envíos a una ruta")
     print("15. Despachar ruta")
     print("16. Completar ruta")
-    print("17. Salir")
+    print("\n17. Salir")
 
 
 def main():
@@ -113,7 +116,7 @@ def main():
                 print(f"Estado actual: {shipment.current_status}")
                 route_str = shipment.assigned_route if shipment.assigned_route else "(sin ruta)"
                 print(f"Ruta asignada: {route_str}")
-                print("Historial de estados:")
+                print("\n=== Historial de estados ===")
                 for i, estado in enumerate(shipment.get_status_history(), start=1):
                     print(f"  {i}. {estado}")
 
@@ -138,10 +141,10 @@ def main():
                 center_id = input("Identificador del centro logístico: ").strip()
                 shipments_in_center = center_service.list_shipments_in_center(center_id)
 
-                print(f"Envios en el Centro {center_id}:")
+                print(f"\n=== Envios en el Centro {center_id} ===")
 
                 for i, shipment in enumerate(shipments_in_center, start=1):
-                    print(f"  {i}. {shipment}")
+                    print(f"  {i}. {shipment.tracking_code}")
 
 
             elif opcion == "12":
@@ -156,20 +159,52 @@ def main():
             elif opcion == "13":
                 routes = route_service.list_routes()
 
-                for routes_id, origin_center_id, destination_center_id in routes:
-                    print(f"- {routes_id} | Origen: {origin_center_id} | Destino: {destination_center_id}")
+                for route_id, origin_center_id, destination_center_id in routes:
+                    estado = "Activa" if route_service.get_route(route_id).is_active else "Finalizada"
+                    origin, destination = origin_center_id.center_id, destination_center_id.center_id
+                    print(f"- {route_id} | Origen: {origin} | Destino: {destination} | Estado: {estado}")
 
 
             elif opcion == "14":
-                pass
+                route_id = input("Identificador de la ruta: ").strip()
+                tracking_code = input("Introduce un código de envío, o varios separados por comas: ")
+                tracking_codes = [
+                    code.strip().upper()
+                    for code in tracking_code.split(",")
+                    if code.strip()
+                ]
+
+                assigned, failed = [], []
+
+                for tracking_code in tracking_codes:
+                    try:
+                        route_service.assign_shipment_to_route(tracking_code, route_id)
+                        assigned.append(tracking_code)
+                    except ValueError as e:
+                        failed.append((tracking_code, str(e)))
+
+                print("\n=== Resumen de asignación ===")
+
+                if assigned:
+                    print("✔ Envíos asignados correctamente:")
+                    for code in assigned:
+                        print(f"  - {code}")
+
+                if failed:
+                    print("✖ Envíos con error:")
+                    for code, error in failed:
+                        print(f"  - {code}: {error}")
 
 
             elif opcion == "15":
-                pass
-
+                route_id = input("Identificador de la ruta: ").strip()
+                route_service.dispatch_route(route_id)
+                print(f"✔ La ruta {route_id} está en transito.")
 
             elif opcion == "16":
-                pass
+                route_id = input("Identificador de la ruta: ").strip()
+                route_service.complete_route(route_id)
+                print(f"✔ La ruta {route_id} se ha completado correctamente.")
 
 
             elif opcion == "17":
