@@ -6,6 +6,15 @@
 
 class Shipment:
     def __init__(self, tracking_code, sender, recipient, priority=1, assigned_route=None):
+        if not tracking_code or not isinstance(tracking_code, str):
+            raise ValueError("El código de seguimiento no puede estar vacío.")
+        if not sender or not isinstance(sender, str):
+            raise ValueError("El remitente no puede estar vacío.")
+        if not recipient or not isinstance(recipient, str):
+            raise ValueError("El destinatario no puede estar vacío.")
+        if priority not in (1, 2, 3):
+            raise ValueError("La prioridad debe ser 1, 2 o 3.")
+
         self.__tracking_code = tracking_code
         self.__sender = sender
         self.__recipient = recipient
@@ -18,25 +27,13 @@ class Shipment:
     def tracking_code(self):
         return self.__tracking_code
 
-    @tracking_code.setter
-    def tracking_code(self, new_tracking_code):
-        self.__tracking_code = new_tracking_code
-
     @property
     def sender(self):
         return self.__sender
 
-    @sender.setter
-    def sender(self, new_sender):
-        self.__sender = new_sender
-
     @property
     def recipient(self):
         return self.__recipient
-
-    @recipient.setter
-    def recipient(self, new_recipient):
-        self.__recipient = new_recipient
 
     @property
     def current_status(self):
@@ -45,12 +42,6 @@ class Shipment:
     @property
     def priority(self):
         return self._priority
-
-    @priority.setter
-    def priority(self, new_priority):
-        if new_priority < 1 or new_priority > 3:
-            raise ValueError("La prioridad debe estar entre 1 y 3.")
-        self._priority = new_priority
 
     @property
     def assigned_route(self):
@@ -70,6 +61,9 @@ class Shipment:
             raise ValueError(f"Transición no permitida: de {self._current_status} a {new_status_format}")
 
     def assign_route(self, new_assigned_route):
+        if new_assigned_route is None:
+            raise ValueError("La ruta asignada no puede ser None.")
+
         self._assigned_route = new_assigned_route
 
     def remove_route(self):
