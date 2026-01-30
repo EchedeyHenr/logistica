@@ -1,6 +1,8 @@
 # infrastructure/seed_data.py
 
 from logisticaEnvios.domain.shipment import Shipment
+from logisticaEnvios.domain.fragile_shipment import FragileShipment
+from logisticaEnvios.domain.express_shipment import ExpressShipment
 from logisticaEnvios.domain.logistic_center import LogisticCenter
 from logisticaEnvios.domain.route import Route
 
@@ -35,9 +37,9 @@ def seed_repository():
 
     envio1 = Shipment("ABC123", "Amazon", "Juan Pérez", 1)
     envio2 = Shipment("EXP456", "Zara", "María López", 2)
-    envio3 = Shipment("URG789", "Apple", "Carlos Gómez", 3)
+    envio3 = ExpressShipment("URG789", "Apple", "Carlos Gómez")
     envio4 = Shipment("ALB882", "Alibaba", "Victor Aldama", 1)
-    envio5 = Shipment("SHN114", "Shein", "Atteneri López", 2)
+    envio5 = FragileShipment("SHN114", "Shein", "Atteneri López", 2)
 
     shipment_repo.add(envio1)
     shipment_repo.add(envio2)
