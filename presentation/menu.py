@@ -56,9 +56,9 @@ def main():
                 sender = input("Remitente: ").strip()
                 recipient = input("Destinatario: ").strip()
                 priority = int(input("Prioridad (1-normal, 2-media, 3-alta): ").strip() or 1)
+                shipment_type = input("Tipo de envío (standard / fragile / express): ").strip().lower()
 
-
-                shipment_service.register_shipment(tracking_code, sender, recipient, priority)
+                shipment_service.register_shipment(tracking_code, sender, recipient, priority, shipment_type)
                 print(f"✔ Envío {tracking_code} registrado con éxito.")
 
 
@@ -99,9 +99,9 @@ def main():
 
             elif opcion == "7":
                 envios = shipment_service.list_shipments()
-                for code, status, priority, route in envios:
+                for code, status, priority, s_type, route in envios:
                     route_str = route or "(sin ruta)"
-                    print(f"- {code} | {status} | P:{priority} | Ruta: {route_str}")
+                    print(f"- {code:<10} | {status:^13} | P:{priority:<2} | {s_type:<10} | Ruta: {route_str}")
 
 
             elif opcion == "8":
@@ -109,10 +109,11 @@ def main():
                 shipment = shipment_service.get_shipment(tracking_code)
 
 
-                print(f"\nDetalles del envío {tracking_code}:")
+                print(f"\nDetalles del envío {tracking_code.upper()}:")
                 print(f"Remitente: {shipment.sender}")
                 print(f"Destinatario: {shipment.recipient}")
                 print(f"Prioridad: {shipment.priority}")
+                print(f"Tipo de envío: {shipment.shipment_type}")
                 print(f"Estado actual: {shipment.current_status}")
                 route_str = shipment.assigned_route if shipment.assigned_route else "(sin ruta)"
                 print(f"Ruta asignada: {route_str}")
@@ -134,14 +135,14 @@ def main():
                 centers = center_service.list_centers()
 
                 for c_id, c_name, c_location in centers:
-                    print(f"- {c_id} | {c_name} | Location: {c_location}")
+                    print(f"- {c_id:<8} | {c_name:^30} | Ubicación: {c_location}")
 
 
             elif opcion == "11":
                 center_id = input("Identificador del centro logístico: ").strip()
                 shipments_in_center = center_service.list_shipments_in_center(center_id)
 
-                print(f"\n=== Envios en el Centro {center_id} ===")
+                print(f"\n=== Envios en el Centro {center_id.upper()} ===")
 
                 for i, shipment in enumerate(shipments_in_center, start=1):
                     print(f"  {i}. {shipment.tracking_code}")
@@ -160,7 +161,7 @@ def main():
                 routes = route_service.list_routes()
 
                 for route_id, origin_center_id, destination_center_id, status in routes:
-                    print(f"- {route_id} | Origen: {origin_center_id} | Destino: {destination_center_id} | Estado: {status}")
+                    print(f"- {route_id:<18} | Origen: {origin_center_id:<8} | Destino: {destination_center_id:<8} | Estado: {status:^13}")
 
 
             elif opcion == "14":

@@ -5,7 +5,7 @@
 # _priority: int : 1 (normal), 2 (mid), 3 (high)
 
 class Shipment:
-    def __init__(self, tracking_code, sender, recipient, priority=1, assigned_route=None):
+    def __init__(self, tracking_code, sender, recipient, priority=1):
         if not tracking_code or not isinstance(tracking_code, str):
             raise ValueError("El código de seguimiento no puede estar vacío.")
         if not sender or not isinstance(sender, str):
@@ -21,7 +21,7 @@ class Shipment:
         self._current_status = "REGISTERED"
         self._status_history = [self._current_status]
         self._priority = priority
-        self._assigned_route = assigned_route
+        self._assigned_route = None
 
     @property
     def tracking_code(self):
@@ -46,6 +46,10 @@ class Shipment:
     @property
     def assigned_route(self):
         return self._assigned_route
+
+    @property
+    def shipment_type(self):
+        return "STANDARD"
 
     def update_status(self, new_status):
         new_status_format = new_status.upper()

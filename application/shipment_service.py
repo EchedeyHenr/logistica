@@ -1,6 +1,8 @@
 # application/services.py
 
 from logisticaEnvios.domain.shipment import Shipment
+from logisticaEnvios.domain.fragile_shipment import FragileShipment
+from logisticaEnvios.domain.express_shipment import ExpressShipment
 from logisticaEnvios.domain.shipment_repository import ShipmentRepository
 
 class ShipmentService:
@@ -9,10 +11,21 @@ class ShipmentService:
         self._repo = repo
 
 
-    def register_shipment(self, tracking_code, sender, recipient, priority=1):
+    def register_shipment(self, tracking_code, sender, recipient, priority=1, shipment_type="standard"):
         if self._repo.get_by_tracking_code(tracking_code) is not None:
             raise ValueError(f"Ya existe un envío con el código de seguimiento '{tracking_code}'.")
-        shipment = Shipment(tracking_code, sender, recipient, priority)
+
+        shipment_type = shipment_type.lower()
+
+        if shipment_type == "standard":
+            shipment = Shipment(tracking_code, sender, recipient, priority)
+        elif shipment_type == "fragile":
+            shipment = FragileShipment(tracking_code, sender, recipient, priority)
+        elif shipment_type == "express":
+            shipment = ExpressShipment(tracking_code, sender, recipient)
+        else:
+            raise ValueError("Tipo de envío no válido.")
+
         self._repo.add(shipment)
 
 
@@ -48,8 +61,9 @@ class ShipmentService:
             tracking_code = shipment.tracking_code
             current_status = shipment.current_status
             priority = shipment.priority
+            shipment_type = shipment.shipment_type
             assigned_route = shipment.assigned_route
-            result.append((tracking_code, current_status, priority, assigned_route))
+            result.append((tracking_code, current_status, priority, shipment_type, assigned_route))
         result.sort(key=lambda item: item[0].lower())
         return result
 
