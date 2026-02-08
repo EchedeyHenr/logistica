@@ -3,7 +3,7 @@
 from logistica.domain.shipment import Shipment
 from logistica.domain.fragile_shipment import FragileShipment
 from logistica.domain.express_shipment import ExpressShipment
-from logistica.domain.logistic_center import LogisticCenter
+from logistica.domain.center import Center
 from logistica.domain.route import Route
 
 from logistica.infrastructure.memory_shipment import ShipmentRepositoryMemory
@@ -17,9 +17,9 @@ def seed_repository():
     center_repo = CenterRepositoryMemory()
     route_repo = RouteRepositoryMemory()
 
-    center_madrid = LogisticCenter("MAD-16", "Madrid Centro", "Calle inventada 16")
-    center_barcelona = LogisticCenter("BCN-03", "Barcelona Centro", "Carrer inventat 03")
-    center_gran_canaria = LogisticCenter("GC-06", "Las Palmas de Gran Canaria", "Calle León y Castillo 06")
+    center_madrid = Center("MAD-16", "Madrid Centro", "Calle inventada 16")
+    center_barcelona = Center("BCN-03", "Barcelona Centro", "Carrer inventat 03")
+    center_gran_canaria = Center("GC-06", "Las Palmas de Gran Canaria", "Calle León y Castillo 06")
 
     center_repo.add(center_madrid)
     center_repo.add(center_barcelona)

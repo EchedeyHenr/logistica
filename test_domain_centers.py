@@ -1,13 +1,13 @@
 # test_domain_centers.py
 
-from logistica.domain.logistic_center import LogisticCenter
+from logistica.domain.center import Center
 from logistica.domain.shipment import Shipment
 
 print("=== TEST DE CENTROS LOGÍSTICOS ===\n")
 
 # --- CASO 1: Creación de centro válido ---
 print("Caso 1: Creación de centro válido")
-centro_a = LogisticCenter("C-MAD", "Madrid Central", "Calle Mayor 1")
+centro_a = Center("C-MAD", "Madrid Central", "Calle Mayor 1")
 print("ID:", centro_a.center_id)
 print("Nombre:", centro_a.name)
 print("Ubicación:", centro_a.location)
@@ -17,7 +17,7 @@ print("---\n")
 # --- CASO 2: Validaciones de inicialización ---
 print("Caso 2: Validaciones de campos obligatorios")
 try:
-    LogisticCenter("", "Nombre", "Ubicación")
+    Center("", "Nombre", "Ubicación")
 except ValueError as e:
     print("Error esperado (ID vacío):", e)
 print("---\n")
@@ -55,4 +55,3 @@ except ValueError as e:
     print("Error esperado:", e)
 print("---\n")
 
-print("¡Tests de LogisticCenter finalizados!")

@@ -1,14 +1,14 @@
 # test_domain_routes.py
 
 from logistica.domain.route import Route
-from logistica.domain.logistic_center import LogisticCenter
+from logistica.domain.center import Center
 from logistica.domain.shipment import Shipment
 
 print("=== TEST DE RUTAS Y FLUJO ENTRE CENTROS ===\n")
 
 # Preparación de datos
-c_origen = LogisticCenter("ORG", "Centro Origen", "Sevilla")
-c_destino = LogisticCenter("DST", "Centro Destino", "Barcelona")
+c_origen = Center("ORG", "Centro Origen", "Sevilla")
+c_destino = Center("DST", "Centro Destino", "Barcelona")
 envio = Shipment("TRK-RUTA", "Pedro", "Juan")
 
 # --- CASO 1: Creación de ruta válida ---

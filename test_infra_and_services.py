@@ -1,4 +1,4 @@
-from logistica.domain.logistic_center import LogisticCenter
+from logistica.domain.center import Center
 from logistica.domain.route import Route
 from logistica.domain.shipment import Shipment
 from logistica.infrastructure.memory_center import CenterRepositoryMemory
