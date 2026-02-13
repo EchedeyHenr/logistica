@@ -237,12 +237,7 @@ class RouteService:
             raise ValueError(f"El envío '{tracking_code}' no está asignado a la ruta '{route_id}'.")
 
         # Operación bidireccional: actualizar ambos lados
-        # 1. Route remueve shipment de su lista
-        route.remove_shipment(shipment)
-
-        # 2. Shipment elimina referencia a la ruta
-        # Route.remove_shipment() ya llama a shipment.remove_route() internamente
-        shipment.remove_route()
+        route.remove_shipment(shipment)  # ya llama a shipment.remove_route() internamente
 
         self._route_repo.add(route)
         self._shipment_repo.add(shipment)
@@ -282,7 +277,8 @@ class RouteService:
 
         # Validar que no esté ya despachada (todos los envíos en IN_TRANSIT)
         # Esto es una optimización, no una regla de negocio estricta
-        if all(s.current_status == "IN_TRANSIT" for s in route.list_shipment()):
+        shipments = route.list_shipment()
+        if shipments and all(s.current_status == "IN_TRANSIT" for s in route.list_shipment()):
             raise ValueError(f"La ruta '{route_id}' ya ha sido despachada.")
 
         origin_center = route.origin_center
@@ -290,7 +286,7 @@ class RouteService:
         # Despachar cada envío
         # Nota: No usamos for-each directo porque route.list_shipment() devuelve copia
         # Necesitamos los objetos reales para modificarlos
-        for shipment in route.list_shipment():
+        for shipment in shipments:
             # Delegar al dominio: Centro maneja el despacho físico
             # Center.dispatch_shipment():
             # 1. Valida que el envío esté en el centro (RN-012)

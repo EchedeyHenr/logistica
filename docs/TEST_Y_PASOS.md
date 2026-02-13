@@ -15,47 +15,21 @@ Este documento describe cómo ejecutar los tests del sistema logístico y qué v
 
 ### Comandos de Ejecución
 
-#### 1. Tests del Dominio - Envíos
+#### Ejecutar todos los tests
 ```bash
-python -m unittest logistica.test.test_shipment
+python -m unittest discover -s logistica/tests
 ```
-**Propósito**: Validar reglas de negocio específicas de los envíos.
 
-#### 2. Tests del dominio - Envios exprés y frágil
+#### Ejecutar un archivo de tests específico
 ```bash
-python -m unittest logistica.test.test_shipment_types
+python -m unittest logistica.tests.test_shipment
+python -m unittest logistica.tests.test_shipment_types
+python -m unittest logistica.tests.test_center
+python -m unittest logistica.tests.test_route
+python -m unittest logistica.tests.test_center_service
+python -m unittest logistica.tests.test_shipment_service
+python -m unittest logistica.tests.test_route_service
 ```
-**Propósito**: Validar reglas de negocio específicas de los envíos exprés y frágil.
-
-#### 3. Tests del Dominio - Centros
-```bash
-python -m unittest logistica.test.test_center
-```
-**Propósito**: Verificar la gestión operativa de centros logísticos.
-
-#### 4. Tests del Dominio - Rutas
-```bash
-python -m unittest logistica.test.test_route
-```
-**Propósito**: Comprobar el flujo de transporte entre centros.
-
-#### 5. Tests de Infraestructura y Servicios
-```bash
-python -m logistica.test_infra_and_services
-```
-**Propósito**: Ejecutar tests de integración de extremo a extremo.
-
-#### 6. Tests de Lógica de Envíos
-```bash
-python -m logistica.test_shipment_logic
-```
-**Propósito**: Probar específicamente la lógica polimórfica de los envíos.
-
-#### 7. Tests de Robustez
-```bash
-python -m logistica.test_robustness
-```
-**Propósito**: Evaluar resiliencia frente a condiciones adversas.
 
 ---
 
@@ -63,26 +37,13 @@ python -m logistica.test_robustness
 
 ### test_shipment.py
 
-**Ámbito**: Validaciones básicas y reglas de negocio de la clase `Shipment`.
+**Ámbito**: Validaciones y reglas de negocio de la clase base `Shipment`.
 
 **Casos Cubiertos**:
-1. Creación válida e inválida
-   - Campos obligatorios no vacíos
-   - formato de código
-   - Prioridad en rango 1-3
-   - Estado inicial REGISTERED
-2. Transiciones de estado permitidas y prohibidas
-   - REGISTERED → IN_TRANSIT ✓
-   - IN_TRANSIT → DELIVERED ✓
-   - REGISTERED → DELIVERED ✗ (inválido)
-3. Gestión de prioridad
-   - Aumentar de 1 a 2, de 2 a 3
-   - Disminuir de 3 a 2, de 2 a 1
-   - Límites: no pasar de 3, no bajar de 1
-4. Asignación/remoción de rutas
-   - Asignar ruta a envío sin ruta
-   - Remover ruta de envío con ruta
-   - Error al remover si no tiene ruta
+1. Creación válida e inválida (campos vacíos, formato de código, prioridad fuera de rango).
+2. Transiciones de estado permitidas (REGISTERED → IN_TRANSIT → DELIVERED) y prohibidas.
+3. Gestión de prioridad (aumentar/disminuir con límites).
+4. Asignación y eliminación de rutas.
 5. Consulta de historial de estados y método `is_delivered()`.
 
 ### test_shipment_types.py
@@ -106,107 +67,57 @@ python -m logistica.test_robustness
 **Ámbito**: Operaciones de centros logísticos e inventario.
 
 **Casos Cubiertos**:
-1. Creación válida e inválida
-   - patrón de ID, nombre, ubicación obligatorios
-   - Inventario inicial vacío
-2. Recepción de envíos
-   - Agregar envío al inventario
-   - No permitir duplicados
-   - Solo aceptar objetos Shipment
-3. Despacho de envíos
-   - Solo despachar envíos en inventario
-   - Actualizar estado a IN_TRANSIT
-   - Remover del inventario
-4. Consultas de inventario
-   - Listar envíos presentes
-   - Verificar presencia por código
+1. Creación válida e inválida (patrón de ID, campos obligatorios, ID vacío).
+2. Recepción de envíos (con y sin duplicados, solo objetos Shipment).
+3. Despacho de envíos (solo si existen en el centro, actualización de estado a IN_TRANSIT).
+4. Consultas de inventario (has_shipment, list_shipments devuelve copia).
 
 ### test_route.py
 
 **Ámbito**: Gestión de rutas y transporte de envíos.
 
 **Casos Cubiertos**:
-1. Creación de ruta
-   - Origen y destino diferentes
-   - Centros no nulos
-   - Estado inicial activo
-2. Asignación de envíos
-   - Solo a rutas activas
-   - Actualiza relación bidireccional
-   - Registra en centro origen
-3. Completar ruta
-   - Solo rutas activas
-   - Envíos a DELIVERED
-   - Envíos a centro destino
-   - Ruta a inactiva
-4. Listado de envíos en ruta
+1. Creación válida e inválida (origen y destino distintos, centros no nulos, patrón de ID).
+2. Asignación de envíos (solo a rutas activas, relación bidireccional, registro en centro origen).
+3. Eliminación de envíos de una ruta.
+4. Completar ruta (después de despachar los envíos): transferencia a centro destino, estado `DELIVERED`, ruta inactiva.
+5. Operaciones sobre rutas inactivas lanzan error.
 
-### test_infra_and_services.py
+### test_center_service.py
 
-**Ámbito**: Integración entre capas y flujos completos.
+**Ámbito**: Casos de uso relacionados con centros logísticos.
 
 **Casos Cubiertos**:
-1. Registro completo de envío
-   - Creación mediante servicio
-   - Persistencia en repositorio
-   - Recuperación posterior
-2. Asignación a ruta completa
-   - Coordinación entre servicios
-   - Actualización de múltiples entidades
-   - Verificación de estado consistente
-3. Flujo completo de entrega
-   - REGISTERED → asignar → IN_TRANSIT → DELIVERED
-   - Verificación en cada paso
-   - Estado final correcto
-4. Interacción entre servicios
-   - ShipmentService + RouteService
-   - RouteService + CenterService
-   - Coordinación de operaciones complejas
+1. Registro de centros (válido, duplicado, campos vacíos).
+2. Listado y consulta de centros (existente, no existente, ID vacío).
+3. Recepción de un envío en un centro (válido, centro no encontrado, envío no encontrado).
+4. Despacho de un envío desde un centro (válido, envío no presente, centro no encontrado).
+5. Listado de envíos en un centro.
 
-### test_shipment_logic.py
+### test_shipment_service.py
 
-**Ámbito**: Comportamiento polimórfico de tipos de envío.
+**Ámbito**: Casos de uso relacionados con envíos.
 
 **Casos Cubiertos**:
-1. Diferenciación por tipo
-   - shipment_type property específica
-   - Comportamientos diferentes según tipo
-   - Identificación correcta
-2. Reglas específicas de Frágil
-   - Prioridad mínima 2
-   - No puede bajar de prioridad 2
-   - Identificación como frágil
-3. Reglas específicas de Express
-   - Prioridad siempre 3
-   - No modificable
-   - Tipo EXPRESS
-4. Polimorfismo en operaciones
-   - Mismos métodos, comportamientos diferentes
-   - Uso a través de interfaz común
-   - Sustituibilidad Liskov (los objetos de una subclase deben poder reemplazar a los de 
-   la clase base sin alterar el funcionamiento del programa)
+1. Registro de envíos de todos los tipos (standard, fragile, express) con validaciones específicas.
+2. Unicidad del código de seguimiento.
+3. Actualización de estado (transiciones válidas e inválidas).
+4. Incremento y decremento de prioridad según el tipo de envío.
+5. Listado de envíos ordenado alfabéticamente.
+6. Consulta de un envío por código.
 
-### test_robustness.py
+### test_route_service.py
 
-**Ámbito**: Casos extremos y manejo de errores.
+**Ámbito**: Casos de uso relacionados con rutas.
 
 **Casos Cubiertos**:
-1. Datos inválidos
-   - Strings vacíos
-   - Valores None
-   - Tipos incorrectos
-2. Operaciones en estados incorrectos
-   - Despachar ruta sin envíos
-   - Completar ruta no activa
-   - Asignar a ruta completada
-3. Condiciones de carrera potenciales
-   - Operaciones repetidas
-   - Estados inconsistentes
-   - Operaciones en paralelo (simuladas)
-4. Recuperación de errores
-   - Excepciones informativas
-   - Estado no corrupto tras error
-   - Mensajes de error claros
+1. Creación de rutas (válida, duplicada, centros inexistentes, mismo origen/destino, ID vacío).
+2. Listado y consulta de rutas. 
+3. Asignación de envíos a rutas (válida, ruta inactiva, envío ya asignado, entidades no encontradas). 
+4. Eliminación de un envío de una ruta. 
+5. Despacho de una ruta (válido, ya despachada, inactiva, sin envíos). 
+6. Completar rutas (válido, ya inactiva, sin envíos).
+7. Casos de robustez: IDs vacíos, entidades inexistentes, doble despacho.
 
 ---
 
@@ -215,37 +126,24 @@ python -m logistica.test_robustness
 ### Capa Domain
 
 | Módulo | Tests | Cobertura |
-| :--- | :---: | :--- |
-| **shipment.py** | 15+ | Validaciones, estados, prioridades |
-| **fragile_shipment.py** | 5+ | Reglas específicas frágiles |
-| **express_shipment.py** | 3+ | Reglas específicas express |
-| **center.py** | 8+ | Inventario, recepción, despacho |
-| **route.py** | 10+ | Ciclo de vida, envíos, completado |
+| :--- |:-----:| :--- |
+| **shipment.py** |  15+  | Validaciones, estados, prioridades |
+| **fragile_shipment.py** |  5+   | Reglas específicas frágiles |
+| **express_shipment.py** |  4+   | Reglas específicas express |
+| **center.py** |  9+   | Inventario, recepción, despacho |
+| **route.py** |  10+  | Ciclo de vida, envíos, completado |
 
 ### Capa Application
 
-| Servicio | Tests | Cobertura |
-| :--- | :---: | :--- |
-| **shipment_service.py** | 6+ | Registro, consulta, actualización |
-| **route_service.py** | 8+ | Asignación, despacho, completado |
-| **center_service.py** | 4+ | Registro, consulta, inventario |
+| Servicio | Tests | Cobertura                                      |
+| :--- |:-----:|:-----------------------------------------------|
+| **shipment_service.py** |  18+  | Registro, consulta, actualización, prioridades |
+| **route_service.py** |  20+  | Asignación, despacho, completado               |
+| **center_service.py** |  12+  | Registro, consulta, inventario                 |
 
 ### Capa Infrastructure
 
-| Repositorio | Tests | Cobertura |
-| :--- | :---: | :--- |
-| **memory_shipment.py** | 3+ | CRUD, búsquedas case-insensitive |
-| **memory_center.py** | 3+ | CRUD, búsquedas |
-| **memory_route.py** | 3+ | CRUD, búsquedas |
-
-### Tests de Integración
-
-| Ámbito | Tests | Cobertura |
-| :--- | :---: | :--- |
-| **Flujos completos** | 5+ | Ciclo: REGISTERED → DELIVERED |
-| **Inter-servicios** | 4+ | Coordinación entre servicios |
-| **Datos reales** | 3+ | Consistencia con seed_data.py |
-
+- Probados indirectamente a través de los servicios con repositorios en memoria
 ---
 
 ## 🔄 Pasos de Verificación Manual
@@ -258,7 +156,7 @@ git clone https://github.com/EchedeyHenr/logistica.git
 cd logistica
 
 # 2. Ejecutar todos los tests
-python -m unittest
+python -m unittest discover -s logistica/tests
 # ✅ Debe pasar todos los tests de la carpeta test
 
 # 2.1 Ejecutar un test específico
@@ -346,7 +244,7 @@ Dentro de la aplicación:
 ```bash
 # Ejecutar desde el directorio correcto
 cd /ruta/al/proyecto  # Un nivel arriba de logistica/
-python -m unittest logistica.test.test_shipment
+python -m unittest discover -s logistica/tests
 ```
 
 #### 2. "AttributeError"
@@ -372,10 +270,9 @@ python -m unittest logistica.test.test_deseado
 **Síntoma**: Tests pasan individualmente pero fallan al ejecutar todos
 **Causa**: Tests modifican estado global (repositorios compartidos)
 
-**Solución en tests**:
+**Solución en tests**: Usar setUp para crear objetos nuevos en cada test
 ```bash
-def setup_method(self):
-    # Crear estado fresco para cada test
+def setUp(self):
     self.repo = ShipmentRepositoryMemory()
     self.service = ShipmentService(self.repo)
 ```
@@ -385,9 +282,9 @@ def setup_method(self):
 ## ✅ Checklist de Tests
 
 ### Antes de Commit
-- Todos los tests unitarios pasan
+- Todos los tests unitarios pasan (`python -m unittest discover`)
 - Tests de integración pasan
-- No hay tests skip/pendientes sin justificación
+- No hay tests saltados (`unittest.skip`) sin justificación
 - Cobertura aceptable (>80% en dominio)
 
 ### Antes de Release
