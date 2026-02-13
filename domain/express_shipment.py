@@ -63,6 +63,18 @@ class ExpressShipment(Shipment):
         """
         raise ValueError("Un envío express ya tiene prioridad máxima.")
 
+    def decrease_priority(self):
+        """
+        No permitido para envíos express.
+
+        Regla de negocio: envíos express tienen prioridad máxima (3)
+        Y no puede disminuir su prioridad.
+
+        Raises:
+            ValueError: Siempre, porque no pueden disminuir su prioridad.
+        """
+        raise ValueError("No se puede disminuir la prioridad de un envío express.")
+
     @property
     def shipment_type(self):
         """
