@@ -17,18 +17,18 @@ def seed_repository():
     center_repo = CenterRepositoryMemory()
     route_repo = RouteRepositoryMemory()
 
-    center_madrid = Center("MAD-16", "Madrid Centro", "Calle inventada 16")
-    center_barcelona = Center("BCN-03", "Barcelona Centro", "Carrer inventat 03")
-    center_gran_canaria = Center("GC-06", "Las Palmas de Gran Canaria", "Calle León y Castillo 06")
+    center_madrid = Center("MAD16", "Madrid Centro", "Calle inventada 16")
+    center_barcelona = Center("BCN03", "Barcelona Centro", "Carrer inventat 03")
+    center_gran_canaria = Center("LPA06", "Las Palmas de Gran Canaria", "Calle León y Castillo 06")
 
     center_repo.add(center_madrid)
     center_repo.add(center_barcelona)
     center_repo.add(center_gran_canaria)
 
-    route_01 = Route("MAD-BCN-01", center_madrid, center_barcelona)
-    route_express = Route("MAD-BCN-EXPRESS", center_madrid, center_barcelona)
-    route_02 = Route("MAD-GC-03", center_madrid, center_gran_canaria)
-    route_express_02 = Route("MAD-GC-EXPRESS", center_madrid, center_gran_canaria)
+    route_01 = Route("MAD16-BCN03-STD-001", center_madrid, center_barcelona)
+    route_express = Route("MAD16-BCN03-EXP-006", center_madrid, center_barcelona)
+    route_02 = Route("MAD16-LPA06-STD-003", center_madrid, center_gran_canaria)
+    route_express_02 = Route("MAD16-LPA06-EXP-009", center_madrid, center_gran_canaria)
 
     route_repo.add(route_01)
     route_repo.add(route_express)

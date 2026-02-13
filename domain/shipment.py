@@ -1,6 +1,8 @@
 # domain/shipment.py
 """Dominio: Entidad base que representa un envío en el sistema logístico."""
 
+import re
+
 class Shipment:
     """
     Representa un envío estándar dentro del sistema logístico.
@@ -26,6 +28,7 @@ class Shipment:
         - RN-002: Campos obligatorios no vacíos
         - RN-003: Prioridad en rango válido (1, 2 o 3)
         - RN-008: Estado inicial siempre REGISTERED
+        - RN-035: El código de seguimiento debe cumplir un patrón de forma.
 
         Args:
             tracking_code (str): Identificador único del envío.
@@ -34,15 +37,20 @@ class Shipment:
             priority (int, opcional): Prioridad del envío (1, 2 o 3). Por defecto es 1.
 
         Raises:
-            ValueError: Si los datos de entrada están vacíos, no son cadenas o la prioridad es inválida.
+            ValueError: Si los datos de entrada están vacíos, no son cadenas, la prioridad es inválida o el patrón de
+            forma de tracking_code es incorrecto.
         """
         # Regla de negocio: datos básicos son obligatorios y deben ser strings no vacíos
         # Esto previene envíos sin información esencial que romperían la trazabilidad
-        if not tracking_code or not isinstance(tracking_code, str):
+        if not isinstance(tracking_code, str) or not tracking_code.strip():
             raise ValueError("El código de seguimiento no puede estar vacío.")
-        if not sender or not isinstance(sender, str):
+        tracking_code = tracking_code.upper().strip()
+        if not re.match(r'^[A-Z]{3}\d{3}', tracking_code):
+            raise ValueError("El código de seguimiento debe tener 3 letras mayúsculas seguidas de 3 dígitos (Ej. ABC123).")
+
+        if not sender or not isinstance(sender, str) or not sender.strip():
             raise ValueError("El remitente no puede estar vacío.")
-        if not recipient or not isinstance(recipient, str):
+        if not recipient or not isinstance(recipient, str) or not recipient.strip():
             raise ValueError("El destinatario no puede estar vacío.")
         if priority not in (1, 2, 3):
             raise ValueError("La prioridad debe ser 1, 2 o 3.")

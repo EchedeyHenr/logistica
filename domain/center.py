@@ -2,6 +2,7 @@
 
 """Dominio: Representa un nodo en la red logística con capacidad de almacenamiento."""
 
+import re
 from logistica.domain.shipment import Shipment
 
 class Center:
@@ -26,6 +27,7 @@ class Center:
         Reglas de negocio aplicadas:
         - RN-010: Todos los campos son obligatorios y no vacíos
         - RN-009: center_id debe ser único (validado externamente en el repositorio)
+        - RN-034: El identificador de un centro debe cumplir un patrón de forma.
 
         Args:
             center_id (str): ID único del centro.
@@ -33,16 +35,19 @@ class Center:
             location (str): Ubicación física.
 
         Raises:
-            ValueError: Si alguno de los argumentos está vacío o no es una cadena.
+            ValueError: Si alguno de los argumentos está vacío, no es una cadena o no cumple con el patrón de forma.
         """
 
         # Reglas de negocio: validación de datos obligatorios
         # Esto previene centros "fantasma" sin información esencial
-        if not center_id or not isinstance(center_id, str):
+        if not isinstance(center_id, str) or not center_id.strip():
             raise ValueError("El ID del centro no puede estar vacío.")
-        if not name or not isinstance(name, str):
+        center_id = center_id.upper().strip()
+        if not re.match(r'^[A-Z]{3,4}\d{2}$', center_id):
+            raise ValueError("El ID del centro debe tener 3 o 4 letras mayúsculas seguida de 2 dígitos (ej. MAD01).")
+        if not name or not isinstance(name, str) or not name.strip():
             raise ValueError("El nombre del centro no puede estar vacío.")
-        if not location or not isinstance(location, str):
+        if not location or not isinstance(location, str) or not location.strip():
             raise ValueError("La ubicación del centro no puede estar vacía.")
 
         # Atributos inmutables después de creación

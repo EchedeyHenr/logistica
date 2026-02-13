@@ -2,6 +2,7 @@
 
 """Dominio: Gestiona el transporte de envíos entre centros logísticos."""
 
+import re
 from logistica.domain.shipment import Shipment
 
 class Route:
@@ -26,6 +27,7 @@ class Route:
         Reglas de negocio aplicadas:
         - RN-014: Centros de origen y destino deben estar definidos (no None)
         - RN-013: Origen y destino no pueden ser el mismo centro
+        - RN-035: El identificador de una ruta debe cumplir un patrón de forma.
 
         Args:
             route_id (str): Identificador único de la ruta.
@@ -33,8 +35,16 @@ class Route:
             destination_center (Center): Centro donde finaliza el trayecto.
 
         Raises:
-            ValueError: Si los centros no están definidos o son idénticos.
+            ValueError: Si los centros o route_id no están definidos, si los centros son idénticos o si el route_id no
+            cumple con el patrón de forma.
         """
+
+        if not isinstance(route_id, str) or not route_id.strip():
+            raise ValueError("El ID de la ruta no puede estar vacío.")
+        route_id = route_id.upper().strip()
+        # Patrón: origen (ej. MAD01) - destino (ej. BCN02) - tipo (STD/FRG/EXP) - 3 dígitos
+        if not re.match(r'^[A-Z]{3,4}\d{2}-[A-Z]{3,4}\d{2}-(STD|FRG|EXP)-\d{3}$', route_id):
+            raise ValueError("El ID de la ruta debe tener el formato ORIGEN-DESTINO-TIPO-999 (ej. MAD01-BCN02-FRG-001).")
 
         # Validación: ambos centros deben existir
         # Previene rutas "fantasma" sin puntos definidos

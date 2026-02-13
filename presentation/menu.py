@@ -52,7 +52,7 @@ def main():
 
         try:
             if opcion == "1":
-                tracking_code = input("Código de seguimiento: ").strip()
+                tracking_code = input("Código de seguimiento (3 letras + 3 dígitos, ej. ABC123): ").strip()
                 sender = input("Remitente: ").strip()
                 recipient = input("Destinatario: ").strip()
                 priority = int(input("Prioridad (1-normal, 2-media, 3-alta): ").strip() or 1)
@@ -123,7 +123,7 @@ def main():
 
 
             elif opcion == "9":
-                center_id = input("Identificador del centro logístico: ").strip()
+                center_id = input("Identificador del centro (3-4 letras y 2 dígitos, ej. MAD01): ").strip()
                 center_name = input("Nombre del centro logístico: ").strip()
                 location_name = input("Ubicación del centro logístico: ").strip()
 
@@ -149,7 +149,7 @@ def main():
 
 
             elif opcion == "12":
-                route_id = input("Identificador de la ruta: ").strip()
+                route_id = input("Identificador de la ruta (formato ORIGEN-DESTINO-STD|FRG|EXP-999, ej. MAD01-BCN02-EXP-001): ").strip()
                 origin_center_id = input("Identificador del centro de origen: ").strip()
                 destination_center_id = input("Identificador del centro de destino: ").strip()
 

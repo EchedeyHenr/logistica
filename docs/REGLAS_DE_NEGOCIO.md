@@ -42,6 +42,18 @@ if priority not in (1, 2, 3):
 - **Mensaje de error**:
 `"La prioridad debe ser 1, 2 o 3."`
 
+### RN-035: Formato del código de seguimiento (`tracking_code`)
+- **Descripción**: El código de seguimiento de un envío debe tener 3 letras mayúsculas seguidas de 3 dígitos (ej. `ABC123`).
+- **Ubicación**: `domain/shipment.py` - método `__init__()`
+- **Implementación**:
+```python
+import re
+if not re.match(r'^[A-Z]{3}\d{3}$', tracking_code):
+    raise ValueError("El código de seguimiento debe tener 3 letras mayúsculas seguidas de 3 dígitos (ej. ABC123).") 
+```
+- **Mensaje de error**:
+`El código de seguimiento debe tener 3 letras mayúsculas seguidas de 3 dígitos (ej. ABC123).`
+
 ## 🎭 Reglas Específicas por Tipo de Envío
 
 ### RN-004: Prioridad Mínima para Envíos Frágiles
@@ -156,6 +168,18 @@ if not self.has_shipment(shipment.tracking_code):
 - **Mensaje de error**:
 `"El envío no se encuentra en el centro."`
 
+### RN-034: Formato del identificador de centro (`center_id`)
+- **Descripción**: El identificador de un centro debe tener 3 o 4 letras mayúsculas seguidas de 2 dígitos (ej. `MAD01`, `BCN02`).
+- **Ubicación**: `domain/center.py` - método `__init__()`
+- **Implementación**:
+```python
+import re
+if not re.match(r'^[A-Z]{3,4}\d{2}$', center_id):
+    raise ValueError("El ID del centro debe tener 3 o 4 letras mayúsculas seguidas de 2 dígitos (ej. MAD01).")
+```
+- **Mensaje de error**:
+`"El ID del centro debe tener 3 o 4 letras mayúsculas seguidas de 2 dígitos (ej. MAD01)."`
+
 ## 🚛 Reglas para Rutas de Transporte
 
 ### RN-013: Origen y Destino Diferentes
@@ -217,6 +241,21 @@ if not self._active:
 ```
 - **Mensaje de error**:
 `"La ruta no está activa."`
+
+### RN-036: Formato del identificador de ruta (`route_id`)
+- **Descripción**:  El identificador de una ruta debe seguir el patrón `ORIGEN-DESTINO-TIPO-999`, donde:
+  - `ORIGEN` y `DESTINO` son identificadores de centros válidos (según RN-034)
+  - `TIPO` es uno de: `STD` (estándar), `FRG` (frágil) o `EXP` (exprés).
+  - `999` es un número de tres dígitos.
+- **Ubicación**: `domain/route.py` - método `__init__()`
+- **Implementación**:
+```python
+import re
+if not re.match(r'^[A-Z]{3,4}\d{2}-[A-Z]{3,4}\d{2}-(STD|FRG|EXP)-\d{3}$', route_id):
+    raise ValueError("El ID de la ruta debe tener el formato ORIGEN-DESTINO-TIPO-999 (ej. MAD01-BCN02-EXP-001).")
+```
+- **Mensaje de error**:
+`"El ID de la ruta debe tener el formato ORIGEN-DESTINO-TIPO-999 (ej. MAD01-BCN02-EXP-001)."`
 
 ## ⚙️ Reglas de Límites y Validaciones
 
