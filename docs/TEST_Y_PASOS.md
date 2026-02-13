@@ -17,35 +17,41 @@ Este documento describe cómo ejecutar los tests del sistema logístico y qué v
 
 #### 1. Tests del Dominio - Envíos
 ```bash
-python -m logistica.test_domain_shipments
+python -m unittest logistica.test.test_shipment
 ```
 **Propósito**: Validar reglas de negocio específicas de los envíos.
 
-#### 2. Tests del Dominio - Centros
+#### 2. Tests del dominio - Envios exprés y frágil
 ```bash
-python -m logistica.test_domain_centers
+python -m unittest logistica.test.test_shipment_types
+```
+**Propósito**: Validar reglas de negocio específicas de los envíos exprés y frágil.
+
+#### 3. Tests del Dominio - Centros
+```bash
+python -m unittest logistica.test.test_center
 ```
 **Propósito**: Verificar la gestión operativa de centros logísticos.
 
-#### 3. Tests del Dominio - Rutas
+#### 4. Tests del Dominio - Rutas
 ```bash
-python -m logistica.test_domain_routes
+python -m unittest logistica.test.test_route
 ```
 **Propósito**: Comprobar el flujo de transporte entre centros.
 
-#### 4. Tests de Infraestructura y Servicios
+#### 5. Tests de Infraestructura y Servicios
 ```bash
 python -m logistica.test_infra_and_services
 ```
 **Propósito**: Ejecutar tests de integración de extremo a extremo.
 
-#### 5. Tests de Lógica de Envíos
+#### 6. Tests de Lógica de Envíos
 ```bash
 python -m logistica.test_shipment_logic
 ```
 **Propósito**: Probar específicamente la lógica polimórfica de los envíos.
 
-#### 6. Tests de Robustez
+#### 7. Tests de Robustez
 ```bash
 python -m logistica.test_robustness
 ```
@@ -55,16 +61,17 @@ python -m logistica.test_robustness
 
 ## 📋 Qué valida cada test
 
-### test_domain_shipments.py
+### test_shipment.py
 
-**Ámbito**: Validaciones básicas y reglas de negocio de envíos.
+**Ámbito**: Validaciones básicas y reglas de negocio de la clase `Shipment`.
 
 **Casos Cubiertos**:
-1. Creación básica de envío
+1. Creación válida e inválida
    - Campos obligatorios no vacíos
+   - formato de código
    - Prioridad en rango 1-3
    - Estado inicial REGISTERED
-2. Transiciones de estado válidas
+2. Transiciones de estado permitidas y prohibidas
    - REGISTERED → IN_TRANSIT ✓
    - IN_TRANSIT → DELIVERED ✓
    - REGISTERED → DELIVERED ✗ (inválido)
@@ -76,14 +83,31 @@ python -m logistica.test_robustness
    - Asignar ruta a envío sin ruta
    - Remover ruta de envío con ruta
    - Error al remover si no tiene ruta
+5. Consulta de historial de estados y método `is_delivered()`.
 
-### test_domain_centers.py
+### test_shipment_types.py
+
+**Ámbito**: Comportamiento polimórfico de `FragileShipment` y `ExpressShipment`.
+
+**Casos Cubiertos**:
+* **`FragileShipment`**:
+   - Prioridad mínima 2
+   - no puede disminuir por debajo de 2
+   - identificación como frágil
+* **`ExpressShipment`**:
+   - Prioridad fija 3
+   - método `increase_priority` prohibido
+   - método `decrease_priority` prohibido
+   - identificación como exprés
+   - Al pasar prioridad a un envío express lanza error.
+
+### test_center.py
 
 **Ámbito**: Operaciones de centros logísticos e inventario.
 
 **Casos Cubiertos**:
-1. Creación de centro
-   - ID, nombre, ubicación obligatorios
+1. Creación válida e inválida
+   - patrón de ID, nombre, ubicación obligatorios
    - Inventario inicial vacío
 2. Recepción de envíos
    - Agregar envío al inventario
@@ -97,7 +121,7 @@ python -m logistica.test_robustness
    - Listar envíos presentes
    - Verificar presencia por código
 
-### test_domain_routes.py
+### test_route.py
 
 **Ámbito**: Gestión de rutas y transporte de envíos.
 
@@ -233,9 +257,13 @@ python -m logistica.test_robustness
 git clone https://github.com/EchedeyHenr/logistica.git
 cd logistica
 
-# 2. Ejecutar tests del dominio
-python -m logistica.test_domain_shipments
-# ✅ Debe pasar todos los tests
+# 2. Ejecutar todos los tests
+python -m unittest
+# ✅ Debe pasar todos los tests de la carpeta test
+
+# 2.1 Ejecutar un test específico
+python -m unittest logistica.tests.test_deseado
+# ✅ Debe pasar todos los tests del archivo
 
 # 3. Ejecutar aplicación
 python -m logistica.presentation.menu
@@ -318,7 +346,7 @@ Dentro de la aplicación:
 ```bash
 # Ejecutar desde el directorio correcto
 cd /ruta/al/proyecto  # Un nivel arriba de logistica/
-python -m logistica.test_domain_shipments
+python -m unittest logistica.test.test_shipment
 ```
 
 #### 2. "AttributeError"
@@ -337,7 +365,7 @@ python -m logistica.test_domain_shipments
 **Solución**:
 ```bash
 # Ejecutar tests en orden aislado
-python -m logistica.test_domain_shipments --tb=short
+python -m unittest logistica.test.test_deseado
 ```
 
 #### 4. Errores de Estado Compartido

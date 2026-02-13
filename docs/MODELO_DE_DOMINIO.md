@@ -69,6 +69,7 @@ def get_status_history() -> List[str]
 #### Comportamientos Específicos
 * **Constructor**: Establece prioridad automática a 3
 * `increase_priority()`: Siempre lanza error (ya es máxima)
+* `decrease_priority()`: Siempre lanza error (No puede disminuir)
 * `shipment_type`: Siempre retorna "EXPRESS"
 
 ### Invariantes
