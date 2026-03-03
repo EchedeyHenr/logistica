@@ -30,6 +30,8 @@
 - **[BUG] `presentation/menu.py:43-46` — `CenterService` recibe el repositorio de rutas en lugar del de envíos.** El constructor `CenterService(center_repo, shipment_repo)` espera un repositorio de envíos como segundo argumento, pero el menú le pasa `repos["routes"]`. Todas las operaciones del servicio que accedan al repositorio de envíos (opciones 9, 10, 11) funcionarán de forma incorrecta o lanzarán errores.
   - *Cómo resolverlo:* Cambia `repos["routes"]` por `repos["shipments"]` en la línea 45.
 
+- **[BUG] `presentation/menu.py` - Fallo en la consulta de un envío no existente (Opción 8)** Cuando el usuario intenta ver los detalles de un envío (opción 8) y proporciona un código de seguimiento que no existe en el sistema, el servicio `shipment_service.get_shipment(tracking_code)` devuelve `None`. El código actual no comprueba si el `shipment` es `None` y intenta acceder a sus atributos (`shipment.sender`, `shipment.recipient`, etc.), lo que provoca un `AttributeError` y la finalización abrupta del programa.
+
 - **[DISEÑO] Lógica de negocio en la capa de aplicación.** El `ShipmentService` decide qué clase instanciar según el tipo de envío (`standard` → `Shipment`, `fragile` → `FragileShipment`, `express` → `ExpressShipment`). También, `RouteService.dispatch_route()` evalúa si una ruta "ya fue despachada" comprobando el estado de sus envíos. Ambas son reglas del dominio, no de la capa de aplicación.
   - *Cómo resolverlo:* La decisión de qué tipo de envío crear puede delegarse a un método de fábrica en el dominio (p.ej. `Shipment.create(tipo, ...)`). La condición de "ya despachada" debería estar en `Route` y lanzar una excepción que el servicio simplemente deje pasar.
 
