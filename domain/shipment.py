@@ -266,3 +266,31 @@ class Shipment:
         if self._priority < 2:
             raise ValueError("No se puede disminuir la prioridad del envío.")
         self._priority -= 1
+
+    @staticmethod
+    def create(tracking_code, sender, recipient, priority=1, shipment_type="standard"):
+        """
+        Crea la instancia adecuada según el tipo especificado.
+
+        Args:
+            tracking_code (str): Código único de seguimiento.
+            sender (str): Información del remitente.
+            recipient (str): Información del destinatario.
+            priority (int, opcional): Nivel de prioridad (por defecto 1).
+            shipment_type (str, opcional): Tipo de envío (por defecto "standard").
+
+        Returns:
+            Shipment: Instancia de Shipment o de alguna de sus subclases.
+        """
+        from logistica.domain.fragile_shipment import FragileShipment
+        from logistica.domain.express_shipment import ExpressShipment
+
+        shipment_type = shipment_type.lower()
+        if shipment_type == "standard":
+            return Shipment(tracking_code, sender, recipient, priority)
+        elif shipment_type == "fragile":
+            return FragileShipment(tracking_code, sender, recipient, priority)
+        elif shipment_type == "express":
+            return ExpressShipment(tracking_code, sender, recipient)
+        else:
+            raise ValueError("Tipo de envío no válido.")

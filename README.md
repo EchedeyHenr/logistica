@@ -277,7 +277,8 @@ Every change in this project is handled through a branch-based workflow. Feature
  ┃ ┣ 📜route_repository.py       # Contract for route persistence and access.
  ┃ ┣ 📜shipment.py               # Base class that models a shipment and its lifecycle.
  ┃ ┣ 📜shipment_repository.py    # Contract for shipment repositories.
- ┃ ┗ 📜shipment_types.py         # Implements different shipment types using inheritance and polymorphism.
+ ┃ ┣ 📜fragile_shipment.py       # Fragile shipment type implementation.
+ ┃ ┗ 📜express_shipment.py       # Express shipment type implementation.
  ┣ 📂infrastructure
  ┃ ┣ 📜__init__.py
  ┃ ┣ 📜memory_center.py          # In-memory implementation of the center repository.
@@ -530,7 +531,8 @@ El siguiente diagrama de secuencia muestra cómo fluye una operación de envío 
  ┃ ┣ 📜route_repository.py       # Contrato para el acceso y persistencia de rutas.
  ┃ ┣ 📜shipment.py               # Clase base que modela un envío y su ciclo de vida.
  ┃ ┣ 📜shipment_repository.py    # Contrato para repositorios de envíos.
- ┃ ┗ 📜shipment_types.py         # Implementa los distintos tipos de envíos usando herencia y polimorfismo.
+ ┃ ┣ 📜fragile_shipment.py       # Implementación de envío frágil.
+ ┃ ┗ 📜express_shipment.py       # Implementación de envío express.
  ┣ 📂infrastructure
  ┃ ┣ 📜__init__.py
  ┃ ┣ 📜memory_center.py          # Implementación en memoria del repositorio de centros.

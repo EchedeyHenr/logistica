@@ -32,17 +32,17 @@ def mostrar_menu():
 
 
 def main():
-    repos = seed_repository()
+    repositories = seed_repository()
 
-    shipment_service = ShipmentService(repos["shipments"])
+    shipment_service = ShipmentService(repositories["shipments"])
     route_service = RouteService(
-        repos["routes"],
-        repos["shipments"],
-        repos["centers"]
+        repositories["routes"],
+        repositories["shipments"],
+        repositories["centers"]
     )
     center_service = CenterService(
-        repos["centers"],
-        repos["routes"]
+        repositories["centers"],
+        repositories["shipments"]
     )
 
     while True:
@@ -73,8 +73,9 @@ def main():
 
             elif opcion == "3":
                 tracking_code = input("Código de seguimiento: ").strip()
-                route_service.remove_shipment_from_route(tracking_code)
-                print(f"✔ Envío {tracking_code} eliminado de su ruta.")
+                route_id = input("ID de ruta: ").strip()
+                route_service.remove_shipment_from_route(tracking_code, route_id)
+                print(f"✔ Envío {tracking_code} eliminado de la ruta {route_id}.")
 
 
             elif opcion == "4":
@@ -99,27 +100,29 @@ def main():
 
             elif opcion == "7":
                 envios = shipment_service.list_shipments()
-                for code, status, priority, s_type, route in envios:
+                for code, status, priority, shipment_type, route in envios:
                     route_str = route or "(sin ruta)"
-                    print(f"- {code:<10} | {status:^13} | P:{priority:<2} | {s_type:<10} | Ruta: {route_str}")
+                    print(f"- {code:<10} | {status:^13} | P:{priority:<2} | {shipment_type:<10} | Ruta: {route_str}")
 
 
             elif opcion == "8":
                 tracking_code = input("Código de seguimiento del envío: ").strip()
                 shipment = shipment_service.get_shipment(tracking_code)
 
-
-                print(f"\nDetalles del envío {tracking_code.upper()}:")
-                print(f"Remitente: {shipment.sender}")
-                print(f"Destinatario: {shipment.recipient}")
-                print(f"Prioridad: {shipment.priority}")
-                print(f"Tipo de envío: {shipment.shipment_type}")
-                print(f"Estado actual: {shipment.current_status}")
-                route_str = shipment.assigned_route if shipment.assigned_route else "(sin ruta)"
-                print(f"Ruta asignada: {route_str}")
-                print("\n=== Historial de estados ===")
-                for i, estado in enumerate(shipment.get_status_history(), start=1):
-                    print(f"  {i}. {estado}")
+                if shipment is None:
+                    print(f"X No se encontró el envío {tracking_code}.")
+                else:
+                    print(f"\nDetalles del envío {tracking_code.upper()}:")
+                    print(f"Remitente: {shipment.sender}")
+                    print(f"Destinatario: {shipment.recipient}")
+                    print(f"Prioridad: {shipment.priority}")
+                    print(f"Tipo de envío: {shipment.shipment_type}")
+                    print(f"Estado actual: {shipment.current_status}")
+                    route_str = shipment.assigned_route if shipment.assigned_route else "(sin ruta)"
+                    print(f"Ruta asignada: {route_str}")
+                    print("\n=== Historial de estados ===")
+                    for i, estado in enumerate(shipment.get_status_history(), start=1):
+                        print(f"  {i}. {estado}")
 
 
             elif opcion == "9":
@@ -134,8 +137,8 @@ def main():
             elif opcion == "10":
                 centers = center_service.list_centers()
 
-                for c_id, c_name, c_location in centers:
-                    print(f"- {c_id:<8} | {c_name:^30} | Ubicación: {c_location}")
+                for center_id, center_name, center_location in centers:
+                    print(f"- {center_id:<8} | {center_name:^30} | Ubicación: {center_location}")
 
 
             elif opcion == "11":
@@ -173,25 +176,25 @@ def main():
                     if code.strip()
                 ]
 
-                assigned, failed = [], []
+                assigned_tracking_codes, failed_assignments = [], []
 
                 for tracking_code in tracking_codes:
                     try:
                         route_service.assign_shipment_to_route(tracking_code, route_id)
-                        assigned.append(tracking_code)
+                        assigned_tracking_codes.append(tracking_code)
                     except ValueError as e:
-                        failed.append((tracking_code, str(e)))
+                        failed_assignments.append((tracking_code, str(e)))
 
                 print("\n=== Resumen de asignación ===")
 
-                if assigned:
+                if assigned_tracking_codes:
                     print("✔ Envíos asignados correctamente:")
-                    for code in assigned:
+                    for code in assigned_tracking_codes:
                         print(f"  - {code}")
 
-                if failed:
+                if failed_assignments:
                     print("✖ Envíos con error:")
-                    for code, error in failed:
+                    for code, error in failed_assignments:
                         print(f"  - {code}: {error}")
 
 

@@ -30,14 +30,17 @@ Desde la raíz del proyecto:
 python -m logistica.presentation.menu
 ```
 
-### 3. Estructura de Comandos Alternativa
+## 🧪 Ejecutar los Tests y Cobertura
+
+Para ejecutar las pruebas unitarias y generar un reporte de cobertura, utiliza los siguientes comandos (asegúrate de tener instalado `coverage`):
 
 ```bash
-# Si estás dentro de la carpeta logistica/
-python -m presentation.menu
-
-# Usando el módulo principal
-python -m logistica
+# Ejecutar tests
+python -m unittest discover -s logistica/tests
+# Ejecutar con coverage
+coverage run -m unittest discover -s logistica/tests
+coverage report
+coverage html
 ```
 
 ## ⚡ Flujo rápido de ejemplo
@@ -45,34 +48,34 @@ python -m logistica
 ### Ejemplo 1: Ciclo Completo de un Envío
 
 1. Registrar centro (opción 9)
-   - ID: VAL-01
+   - ID: VAL01
    - Nombre: Valencia Norte
    - Ubicación: Calle Ejemplo 123
 
 2. Registrar envío (opción 1)
-   - Código: TEST001
+   - Código: TES001
    - Remitente: Empresa Ejemplo
    - Destinatario: Cliente Final
    - Prioridad: 2
    - Tipo: standard
 
 3. Crear ruta (opción 12)
-   - ID: RUTA-01
-   - Origen: VAL-01
-   - Destino: MAD-16 (ya existe en datos iniciales)
+   - ID: VAL01-MAD16-STD-001
+   - Origen: VAL01
+   - Destino: MAD16 (ya existe en datos iniciales)
 
 4. Asignar envío a ruta (opción 2)
-   - Código: TEST001
-   - Ruta: RUTA-01
+   - Código: TES001
+   - Ruta: VAL01-MAD16-STD-001
 
 5. Despachar ruta (opción 15)
-   - Ruta: RUTA-01
+   - Ruta: VAL01-MAD16-STD-001
 
 6. Completar ruta (opción 16)
-   - Ruta: RUTA-01
+   - Ruta: VAL01-MAD16-STD-001
 
 7. Verificar envío entregado (opción 8)
-   - Código: TEST001
+   - Código: TES001
 
 ### Ejemplo 2: Gestión de Prioridades
 

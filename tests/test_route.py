@@ -18,7 +18,7 @@ class TestRoute(unittest.TestCase):
         self.assertIs(self.route.origin_center, self.origin)
         self.assertIs(self.route.destination_center, self.dest)
         self.assertTrue(self.route.is_active)
-        self.assertEqual(self.route.list_shipment(), [])
+        self.assertEqual(self.route.list_shipments(), [])
 
     def test_create_route_invalid_id_pattern(self):
         with self.assertRaises(ValueError):
@@ -34,7 +34,7 @@ class TestRoute(unittest.TestCase):
 
     def test_add_shipment(self):
         self.route.add_shipment(self.shipment)
-        self.assertIn(self.shipment, self.route.list_shipment())
+        self.assertIn(self.shipment.tracking_code, self.route.list_shipments())
         self.assertEqual(self.shipment.assigned_route, self.route.route_id)
         # Verificar que el envío se ha registrado en el centro de origen
         self.assertTrue(self.origin.has_shipment("ABC123"))
@@ -43,7 +43,7 @@ class TestRoute(unittest.TestCase):
         # Preparamos la ruta para que quede inactiva
         self.route.add_shipment(self.shipment)
         self.origin.dispatch_shipment(self.shipment)  # despachamos la ruta
-        self.route.complete_route()  # ahora la ruta queda inactiva
+        self.route.complete_route([self.shipment])  # ahora la ruta queda inactiva
 
         # Intentar añadir un nuevo envío a la ruta inactiva debe fallar
         new_shipment = Shipment("XYZ789", "C", "D", 2)
@@ -53,7 +53,7 @@ class TestRoute(unittest.TestCase):
     def test_remove_shipment(self):
         self.route.add_shipment(self.shipment)
         self.route.remove_shipment(self.shipment)
-        self.assertNotIn(self.shipment, self.route.list_shipment())
+        self.assertNotIn(self.shipment.tracking_code, self.route.list_shipments())
         self.assertIsNone(self.shipment.assigned_route)
         # El envío sigue en el centro de origen (no se elimina de allí)
         self.assertTrue(self.origin.has_shipment("ABC123"))
@@ -61,10 +61,10 @@ class TestRoute(unittest.TestCase):
     def test_complete_route(self):
         self.route.add_shipment(self.shipment)
         self.origin.dispatch_shipment(self.shipment)
-        self.route.complete_route()
+        self.route.complete_route([self.shipment])
 
         self.assertFalse(self.route.is_active)
-        self.assertEqual(self.route.list_shipment(), [])
+        self.assertEqual(self.route.list_shipments(), [])
         # El envío debe estar en el centro destino y con estado DELIVERED
         self.assertTrue(self.dest.has_shipment("ABC123"))
         self.assertEqual(self.shipment.current_status, "DELIVERED")
@@ -74,16 +74,16 @@ class TestRoute(unittest.TestCase):
     def test_complete_route_already_inactive_raises(self):
         self.route.add_shipment(self.shipment)
         self.origin.dispatch_shipment(self.shipment)  # se despacha la ruta
-        self.route.complete_route()  # primera vez, correcto
+        self.route.complete_route([self.shipment])  # primera vez, correcto
 
         with self.assertRaises(ValueError):
-            self.route.complete_route()  # segunda vez debe fallar
+            self.route.complete_route([self.shipment])  # segunda vez debe fallar
 
     def test_list_shipment_returns_copy(self):
         self.route.add_shipment(self.shipment)
-        lista = self.route.list_shipment()
-        lista.append(self.shipment)  # modificar copia (aunque sea el mismo objeto)
-        self.assertEqual(len(self.route.list_shipment()), 1)
+        lista = self.route.list_shipments()
+        lista.append(self.shipment.tracking_code)  # modificar copia (aunque sea el mismo objeto)
+        self.assertEqual(len(self.route.list_shipments()), 1)
 
 if __name__ == '__main__':
     unittest.main()

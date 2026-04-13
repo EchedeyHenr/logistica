@@ -61,8 +61,7 @@ class Route:
         self.__origin_center = origin_center
         self.__destination_center = destination_center
 
-        # Lista de envíos asignados a esta ruta
-        # Se mantiene como lista para preservar orden de asignación
+        # Lista de códigos de seguimiento asignados a esta ruta
         self._shipments = []
 
         # Estado de la ruta: True = activa (puede recibir envíos), False = completada
@@ -115,8 +114,8 @@ class Route:
         if not self.is_active:
             raise ValueError("La ruta no está activa.")
 
-        # Agregar a la lista interna de envíos de esta ruta
-        self._shipments.append(shipment)
+        # Agregar a la lista interna el código de seguimiento
+        self._shipments.append(shipment.tracking_code)
 
         # Establecer relación bidireccional: envío conoce su ruta asignada
         shipment.assign_route(self.route_id)
@@ -137,13 +136,26 @@ class Route:
             shipment (Shipment): El envío que se desea retirar de la ruta.
         """
 
-        # Remover de la lista interna
-        self._shipments.remove(shipment)
+        # Remover de la lista interna el código de seguimiento
+        self._shipments.remove(shipment.tracking_code)
 
         # Desvincular la relación bidireccional
         shipment.remove_route()
 
-    def complete_route(self):
+    def dispatch(self, shipments):
+        """
+        Valida que la ruta pueda ser despachada.
+        
+        Args:
+            shipments (list[Shipment]): Lista de objetos Shipment asignados a la ruta.
+        
+        Raises:
+            ValueError: Si la ruta ya ha sido despachada.
+        """
+        if self._shipments and all(s.current_status == "IN_TRANSIT" for s in shipments):
+            raise ValueError(f"La ruta '{self.route_id}' ya ha sido despachada.")
+
+    def complete_route(self, shipments):
         """
         Finaliza el trayecto, transfiere los paquetes al centro de destino y los marca como entregados.
 
@@ -158,6 +170,9 @@ class Route:
         - Todos los envíos deben actualizarse a estado DELIVERED
         - Los envíos se registran físicamente en el centro destino
 
+        Args:
+            shipments (list[Shipment]): Lista de objetos Shipment a completar.
+
         Raises:
             ValueError: Si la ruta ya estaba inactiva.
         """
@@ -171,7 +186,7 @@ class Route:
         self._active = False
 
         # Procesar cada envío en la ruta
-        for shipment in self._shipments:
+        for shipment in shipments:
             # 1. Registrar el envío en el centro de destino (llega físicamente)
             self.__destination_center.receive_shipment(shipment)
 
@@ -182,7 +197,7 @@ class Route:
         # Los envíos ya no están "en la ruta", están en el centro destino
         self._shipments.clear()
 
-    def list_shipment(self):
+    def list_shipments(self):
         """
         Devuelve una lista de los envíos asociados actualmente a la ruta.
 
