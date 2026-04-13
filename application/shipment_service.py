@@ -1,8 +1,6 @@
 # application/services.py
 
 from logistica.domain.shipment import Shipment
-from logistica.domain.fragile_shipment import FragileShipment
-from logistica.domain.express_shipment import ExpressShipment
 from logistica.domain.shipment_repository import ShipmentRepository
 
 class ShipmentService:
@@ -73,20 +71,8 @@ class ShipmentService:
 
         # Normalizar tipo de envío para comparación case-insensitive
         shipment_type = shipment_type.lower()
-
-        # Factory pattern: crea la instancia adecuada según el tipo
-        # Cada constructor valida sus propias reglas de negocio
-        if shipment_type == "standard":
-            shipment = Shipment(tracking_code, sender, recipient, priority)
-        elif shipment_type == "fragile":
-            # FragileShipment valida internamente que priority ≥ 2 (RN-004)
-            shipment = FragileShipment(tracking_code, sender, recipient, priority)
-        elif shipment_type == "express":
-            # ExpressShipment ignora el parámetro priority, siempre usa 3
-            # Esto implementa RN-005 (prioridad fija para express)
-            shipment = ExpressShipment(tracking_code, sender, recipient)
-        else:
-            raise ValueError("Tipo de envío no válido.")
+        # Factory pattern: crea la instancia adecuada según el tipo (delegado al dominio)
+        shipment = Shipment.create(tracking_code, sender, recipient, priority, shipment_type)
 
         # Persistir el envío creado en el repositorio
         # El repositorio es responsable del almacenamiento, no el servicio

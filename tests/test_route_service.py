@@ -95,8 +95,8 @@ class TestRouteService(unittest.TestCase):
         self.service.assign_shipment_to_route("ABC123", route_id)
 
         route = self.service.get_route(route_id)
-        self.assertEqual(len(route.list_shipment()), 1)
-        self.assertEqual(route.list_shipment()[0].tracking_code, "ABC123")
+        self.assertEqual(len(route.list_shipments()), 1)
+        self.assertEqual(route.list_shipments()[0], "ABC123")
 
         shipment = self.shipment_service.get_shipment("ABC123")
         self.assertEqual(shipment.assigned_route, route_id)
@@ -149,7 +149,7 @@ class TestRouteService(unittest.TestCase):
         self.service.remove_shipment_from_route("ABC123", route_id)
 
         route = self.service.get_route(route_id)
-        self.assertEqual(len(route.list_shipment()), 0)
+        self.assertEqual(len(route.list_shipments()), 0)
         shipment = self.shipment_service.get_shipment("ABC123")
         self.assertIsNone(shipment.assigned_route)
         # El envío sigue en el centro de origen

@@ -5,6 +5,32 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-03-03 (Fase 03: Pruebas Unitarias y Resoluciones de Bugs)
+
+### Added
+- **Suite de pruebas unitarias** completa en `logistica/tests/`:
+  - `test_shipment.py`
+  - `test_shipment_types.py`
+  - `test_center.py`
+  - `test_route.py`
+  - `test_center_service.py`
+  - `test_shipment_service.py`
+  - `test_route_service.py`
+- **Cobertura de código** documentada con `coverage`.
+- **docs/README.md** como punto de entrada de la documentación.
+
+### Changed
+- Refactorización de **Route** y **Shipment** aplicando principios de agregados de DDD:
+  - `Route` delega el instanciamiento de la lógica hacia clases de dominio.
+  - `Shipment` expone una factoría `create` y asume su propia carga.
+- Nombres de tests modificados (de `TEST_Y_PASOS.md` a `TESTS_Y_PASOS.md`).
+- Correcciones menores de indentaciones e inputs en `menu.py` y carga de IDs en variables.
+
+### Fixed
+- **Bug crítico de la opción 8**: Corregida captura de punteros vacíos al buscar un envío.
+- **Inyección de Dependencias**: Corregida inyección en `CenterService` para utilizar el repositorio correcto.
+- **Generación de rutas (opción 3)**: Corregida firma incorrrecta de la funcionalidad en presentación.
+
 ## [0.2.0] - 2026-01-28 (Fase 02: Documentación Completa)
 
 ### Added
@@ -133,7 +159,7 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 |---------|-------|--------|---------------------|
 | 0.1.0 | 2026-01-14 | ✅ Completado | Implementación inicial por capas |
 | 0.2.0 | 2026-01-28 | ✅ Completado | Documentación completa del sistema |
-| 0.3.0 | Por planificar | 🚧 En desarrollo | Persistencia real y API REST |
+| 0.3.0 | 2026-03-03 | ✅ Completado | Pruebas unitarias y resoluciones |
 | 1.0.0 | Por planificar | 📅 Planeado | Versión estable para producción |
 
 ---

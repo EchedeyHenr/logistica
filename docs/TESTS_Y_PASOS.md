@@ -176,33 +176,33 @@ Dentro de la aplicación:
    ✅ Muestra 5 envíos iniciales
 
 2. Registrar nuevo envío (opción 1)
-   Código: VERIF1, Tipo: standard, Prioridad: 2
+   Código: VRF100, Tipo: standard, Prioridad: 2
    ✅ Registra sin errores
 
 3. Listar envíos nuevamente
-   ✅ Ahora muestra 6 envíos, VERIF1 al final
+   ✅ Ahora muestra 6 envíos, VRF100 al final
 
 4. Crear ruta (opción 12)
-   ID: TEST-ROUTE, Origen: MAD-16, Destino: BCN-03
+   ID: MAD16-BCN03-STD-189, Origen: MAD16, Destino: BCN03
    ✅ Crea ruta exitosamente
 
 5. Asignar envío a ruta (opción 2)
-   Envío: VERIF1, Ruta: TEST-ROUTE
+   Envío: VRF100, Ruta: MAD16-BCN03-STD-189
    ✅ Asigna correctamente
 
 6. Ver detalles envío (opción 8)
-   Código: VERIF1
-   ✅ Muestra ruta asignada TEST-ROUTE
+   Código: VRF100
+   ✅ Muestra ruta asignada MAD16-BCN03-STD-189
 
 7. Despachar ruta (opción 15)
-   Ruta: TEST-ROUTE
+   Ruta: MAD16-BCN03-STD-189
    ✅ Despacha correctamente
 
 8. Ver detalles envío nuevamente
    ✅ Estado: IN_TRANSIT
 
 9. Completar ruta (opción 16)
-   Ruta: TEST-ROUTE
+   Ruta: MAD16-BCN03-STD-189
    ✅ Completa correctamente
 
 10. Ver detalles envío final
@@ -214,10 +214,10 @@ Dentro de la aplicación:
 ```bash
 1. Intentar registrar envío duplicado
    Código: ABC123 (ya existe)
-   ✅ Error: "Ya existe un envío con ese código"
+   ✅ Error: "Ya existe un envío con el código de seguimiento 'ABC123'"
 
 2. Intentar crear ruta con mismo origen/destino
-   Origen: MAD-16, Destino: MAD-16
+   Origen: MAD16, Destino: MAD16
    ✅ Error: "El centro de origen y destino no pueden ser el mismo"
 
 3. Intentar transición inválida de estado

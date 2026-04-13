@@ -277,9 +277,11 @@ class RouteService:
 
         # Validar que no esté ya despachada (todos los envíos en IN_TRANSIT)
         # Esto es una optimización, no una regla de negocio estricta
-        shipments = route.list_shipment()
-        if shipments and all(s.current_status == "IN_TRANSIT" for s in shipments):
-            raise ValueError(f"La ruta '{route_id}' ya ha sido despachada.")
+        tracking_codes = route.list_shipments()
+        shipments = [self._shipment_repo.get_by_tracking_code(code) for code in tracking_codes]
+        
+        # Validar negocio en dominio
+        route.dispatch(shipments)
 
         origin_center = route.origin_center
 
@@ -333,8 +335,12 @@ class RouteService:
         # 2. Transferencia de envíos a centro destino
         # 3. Actualización de estados a DELIVERED
         # 4. Cambio de estado de la ruta a inactiva
-        route.complete_route()
+        tracking_codes = route.list_shipments()
+        shipments = [self._shipment_repo.get_by_tracking_code(code) for code in tracking_codes]
+        route.complete_route(shipments)
 
-        # Persistir cambios en la ruta
-        # Los envíos ya fueron actualizados y persistidos por el centro destino
+        # Persistir cambios en la ruta y envios
+        # Los envíos ya fueron actualizados por el centro destino
         self._route_repo.add(route)
+        for shipment in shipments:
+            self._shipment_repo.add(shipment)
