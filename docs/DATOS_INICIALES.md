@@ -11,17 +11,17 @@ El sistema incluye datos iniciales predefinidos para facilitar las pruebas, demo
 ### Centros Logísticos Iniciales
 | ID | Nombre | Ubicación | Descripción |
 |----|--------|-----------|-------------|
-| `MAD-16` | Madrid Centro | Calle inventada 16 | Centro principal en Madrid |
-| `BCN-03` | Barcelona Centro | Carrer inventat 03 | Centro principal en Barcelona |
-| `GC-06` | Las Palmas de Gran Canaria | Calle León y Castillo 06 | Centro en Canarias |
+| `MAD16` | Madrid Centro | Calle inventada 16 | Centro principal en Madrid |
+| `BCN03` | Barcelona Centro | Carrer inventat 03 | Centro principal en Barcelona |
+| `LPA06` | Las Palmas de Gran Canaria | Calle León y Castillo 06 | Centro en Canarias |
 
 ### Rutas de Transporte Iniciales
 | ID de Ruta | Origen | Destino | Estado | Descripción |
 |------------|--------|---------|--------|-------------|
-| `MAD-BCN-01` | `MAD-16` | `BCN-03` | Activa | Ruta estándar Madrid-Barcelona |
-| `MAD-BCN-EXPRESS` | `MAD-16` | `BCN-03` | Activa | Ruta express Madrid-Barcelona |
-| `MAD-GC-03` | `MAD-16` | `GC-06` | Activa | Ruta estándar Madrid-Canarias |
-| `MAD-GC-EXPRESS` | `MAD-16` | `GC-06` | Activa | Ruta express Madrid-Canarias |
+| `MAD16-BCN03-STD-001` | `MAD16` | `BCN03` | Activa | Ruta estándar Madrid-Barcelona |
+| `MAD16-BCN03-EXP-006` | `MAD16` | `BCN03` | Activa | Ruta express Madrid-Barcelona |
+| `MAD16-LPA06-STD-003` | `MAD16` | `LPA06` | Activa | Ruta estándar Madrid-Canarias |
+| `MAD16-LPA06-EXP-009` | `MAD16` | `LPA06` | Activa | Ruta express Madrid-Canarias |
 
 ### Envíos Iniciales
 | Código | Remitente | Destinatario | Tipo | Prioridad | Estado | Ruta Asignada |
@@ -41,21 +41,30 @@ Los datos iniciales se definen en: `infrastructure/seed_data.py`
 
 ### Estructura del Archivo
 ```python
-def seed_repository():
-    # 1. Crear repositorios
+def seed_repository(use_sqlite=True):
+    # 0. Instanciación DB si es necesario (Fase 04)
+    if use_sqlite:
+        import subprocess, os
+        # Si logistica.db no existe lanza el script autónomo de inicialización DDL y seed:
+        if not os.path.exists("logistica.db"):
+            subprocess.run(["python", "crear_bd.py"])
+        # Retorna implementaciones SQL
+        return {"shipments": ShipmentRepositorySQLite(), ...}
+
+    # 1. Crear repositorios (Modo Memoria)
     shipment_repo = ShipmentRepositoryMemory()
     center_repo = CenterRepositoryMemory()
     route_repo = RouteRepositoryMemory()
     
     # 2. Crear centros
-    center_madrid = Center("MAD-16", "Madrid Centro", "Calle inventada 16")
-    center_barcelona = Center("BCN-03", "Barcelona Centro", "Carrer inventat 03")
-    center_gran_canaria = Center("GC-06", "Las Palmas de Gran Canaria", 
+    center_madrid = Center("MAD16", "Madrid Centro", "Calle inventada 16")
+    center_barcelona = Center("BCN03", "Barcelona Centro", "Carrer inventat 03")
+    center_gran_canaria = Center("LPA06", "Las Palmas de Gran Canaria", 
                                          "Calle León y Castillo 06")
     
     # 3. Crear rutas
-    route_01 = Route("MAD-BCN-01", center_madrid, center_barcelona)
-    route_express = Route("MAD-BCN-EXPRESS", center_madrid, center_barcelona)
+    route_01 = Route("MAD16-BCN03-STD-001", center_madrid, center_barcelona)
+    route_express = Route("MAD16-BCN03-EXP-006", center_madrid, center_barcelona)
     # ... más rutas
     
     # 4. Crear envíos
@@ -107,9 +116,9 @@ shipment_repo.add(nuevo_express)
 ```python
 # Asignar envío existente a ruta existente
 envio1 = shipment_repo.get_by_tracking_code("ABC123")
-route_01 = route_repo.get_by_route_id("MAD-BCN-01")
+route_01 = route_repo.get_by_route_id("MAD16-BCN03-STD-001")
 route_01.add_shipment(envio1)
-envio1.assign_route("MAD-BCN-01")
+envio1.assign_route("MAD16-BCN03-STD-001")
 ```
 
 ## 🧪 Datos para Casos de Prueba Específicos
@@ -160,7 +169,8 @@ routes = [
 ## 🔄 Reinicio de Datos
 
 ### Durante Desarrollo
-Los datos se reinician cada vez que se ejecuta:
+Si usas las versiones en memoria (`use_sqlite=False`), los datos se reinician cada vez.
+Con el uso de SQLite (Fase 04 en adelante), los datos son **persistentes** en `logistica.db`. Para un reinicio completo (Factory Reset) borrar físicamente el archivo `logistica.db` antes de:
 ```bash
 python -m logistica.presentation.menu
 ```
@@ -187,29 +197,29 @@ python -m logistica.presentation.menu
 
 ### Escenario 1: Demostración Básica
 ```
-1. Listar envíos (opción 7) - Ver 5 envíos
-2. Listar centros (opción 10) - Ver 3 centros
-3. Listar rutas (opción 13) - Ver 4 rutas
-4. Asignar ABC123 a MAD-BCN-01 (opción 2)
-5. Despachar ruta MAD-BCN-01 (opción 15)
-6. Completar ruta MAD-BCN-01 (opción 16)
-7. Ver detalles de ABC123 (opción 8) - Ver entregado
+1. Listar envíos (opción 5) - Ver 5 envíos
+2. Listar centros (opción 8) - Ver 3 centros
+3. Listar rutas (opción 11) - Ver 4 rutas
+4. Asignar ABC123 a MAD16-BCN03-STD-001 (opción 12)
+5. Despachar ruta MAD16-BCN03-STD-001 (opción 14)
+6. Completar ruta MAD16-BCN03-STD-001 (opción 15)
+7. Ver detalles de ABC123 (opción 6) - Ver entregado
 ```
 
 ### Escenario 2: Gestión de Prioridades
 ```
-1. Ver detalles de SHN114 (opción 8) - Frágil, prioridad 2
-2. Aumentar prioridad (opción 5) - Llega a 3
-3. Intentar disminuir (opción 6) - Error (no puede bajar de 2)
-4. Ver detalles de URG789 (opción 8) - Express, prioridad 3
-5. Intentar aumentar (opción 5) - Error (ya es máxima)
+1. Ver detalles de SHN114 (opción 6) - Frágil, prioridad 2
+2. Aumentar prioridad (opción 3) - Llega a 3
+3. Intentar disminuir (opción 4) - Error (no puede bajar de 2)
+4. Ver detalles de URG789 (opción 6) - Express, prioridad 3
+5. Intentar aumentar (opción 3) - Error (ya es máxima)
 ```
 
 ### Escenario 3: Validación de Reglas
 ```
 1. Crear envío frágil con prioridad 1 (opción 1)
    - Error: "Un envío frágil no puede tener prioridad inferior a 2"
-2. Crear ruta con mismo origen/destino (opción 12)
+2. Crear ruta con mismo origen/destino (opción 10)
    - Error: "El centro de origen y destino no pueden ser el mismo"
 3. Asignar envío a ruta completada
    - Error: "La ruta no está activa"
@@ -221,13 +231,13 @@ python -m logistica.presentation.menu
 Todos los identificadores (códigos de envío, IDs de centro/ruta) se normalizan a minúsculas internamente:
 ```python
 # "ABC123" y "abc123" son el mismo envío
-# "MAD-16" y "mad-16" son el mismo centro
+# "MAD16" y "mad16" son el mismo centro
 ```
 
-### 2. No Persistencia Entre Ejecuciones
+### 2. Persistencia Entre Ejecuciones
 ```python
-# Los datos viven solo en memoria durante la ejecución
-# Cada reinicio comienza con los datos iniciales de seed_data.py
+# Por defecto ahora usamos persistencia fuerte (use_sqlite=True) 
+# Todo avance quedará guardado para tu próxima ejecución en 'logistica.db'.
 ```
 
 ### 3. Thread Safety

@@ -16,6 +16,7 @@ Attributes:
 """
 
 from logistica.domain.center_repository import CenterRepository
+from logistica.infrastructure.errores import EntityAlreadyExistsError, EntityNotFoundError
 
 class CenterRepositoryMemory(CenterRepository):
     """
@@ -57,7 +58,15 @@ class CenterRepositoryMemory(CenterRepository):
         TypeError: Si el parámetro `center` no es una instancia válida de Center.
         """
         key = center.center_id.lower()
+        if key in self._by_center_id:
+            raise EntityAlreadyExistsError(f"Ya existe un centro con identificador '{center.center_id}'")
         self._by_center_id[key] = center
+
+    def update(self, center):
+        """
+        En memoria el objeto ya está mutado por referencia; no hace nada.
+        """
+        pass
 
     def remove(self, center_id):
         """
@@ -75,13 +84,13 @@ class CenterRepositoryMemory(CenterRepository):
         """
         center_id = (center_id or "").strip()
         if not center_id:
-            return False
+            raise EntityNotFoundError("El ID del centro no puede estar vacío.")
 
         key = center_id.lower()
         if key in self._by_center_id:
             del self._by_center_id[key]
-            return True
-        return False
+        else:
+            raise EntityNotFoundError(f"No existe un centro con el identificador '{center_id}'.")
 
     def get_by_center_id(self, center_id):
         """
@@ -95,8 +104,11 @@ class CenterRepositoryMemory(CenterRepository):
         """
         center_id = (center_id or "").strip()
         if not center_id:
-            return None
-        return self._by_center_id.get(center_id.lower())
+            raise EntityNotFoundError("El ID del centro no puede estar vacío.")
+        center = self._by_center_id.get(center_id.lower())
+        if center is None:
+            raise EntityNotFoundError(f"No existe un centro con el identificador '{center_id}'.")
+        return center
 
     def list_all(self):
         """

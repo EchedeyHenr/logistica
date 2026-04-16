@@ -17,6 +17,7 @@ Attributes:
 
 from logistica.domain.shipment_repository import ShipmentRepository
 from logistica.domain.shipment import Shipment
+from logistica.infrastructure.errores import EntityAlreadyExistsError, EntityNotFoundError
 
 class ShipmentRepositoryMemory(ShipmentRepository):
     """
@@ -54,7 +55,15 @@ class ShipmentRepositoryMemory(ShipmentRepository):
             shipment (Shipment): Instancia del envío a almacenar. Puede ser Shipment, FragileShipment o ExpressShipment.
         """
         key = shipment.tracking_code.lower()
+        if key in self._by_tracking_code:
+            raise EntityAlreadyExistsError(f"Ya existe un envío con el código '{shipment.tracking_code}'.")
         self._by_tracking_code[key] = shipment
+
+    def update(self, shipment):
+        """
+        En memoria el objeto ya está mutado por referencia; no hace nada.
+        """
+        pass
 
     def remove(self, tracking_code):
         """
@@ -68,13 +77,13 @@ class ShipmentRepositoryMemory(ShipmentRepository):
         """
         tracking_code = (tracking_code or "").strip()
         if not tracking_code:
-            return False
+            raise EntityNotFoundError("El código de seguimiento no puede estar vacío.")
 
         key = tracking_code.lower()
         if key in self._by_tracking_code:
             del self._by_tracking_code[key]
-            return True
-        return False
+        else:
+            raise EntityNotFoundError(f"No existe un envío con código '{tracking_code}'.")
 
     def get_by_tracking_code(self, tracking_code):
         """
@@ -89,8 +98,11 @@ class ShipmentRepositoryMemory(ShipmentRepository):
         """
         tracking_code = (tracking_code or "").strip()
         if not tracking_code:
-            return None
-        return self._by_tracking_code.get(tracking_code.lower())
+            raise EntityNotFoundError("El código de seguimiento no puede estar vacío.")
+        shipment = self._by_tracking_code.get(tracking_code.lower())
+        if shipment is None:
+            raise EntityNotFoundError(f"No existe un envío con código '{tracking_code}'.")
+        return shipment
 
     def list_all(self):
         """

@@ -18,18 +18,37 @@ from logistica.infrastructure.memory_center import CenterRepositoryMemory
 from logistica.infrastructure.memory_route import RouteRepositoryMemory
 
 
-def seed_repository():
+def seed_repository(use_sqlite=True):
     """
-    Inicializa los repositorios en memoria con datos de prueba.
+    Inicializa los repositorios en memoria con datos de prueba o devuelve los de SQLite.
 
-    Crea centros logísticos, rutas entre ellos y envíos de distintos tipos
-    para permitir la ejecución inmediata del sistema sin necesidad de entrada
-    manual de datos.
+    Si use_sqlite es True, devuelve las implementaciones SQLite y asegura que exista la DB.
+    De lo contrario, crea centros logísticos, rutas entre ellos y envíos en memoria.
 
     Returns:
         dict: Diccionario conteniendo instancias de repositorios inicializadas
               bajo las claves "shipments", "routes" y "centers".
     """
+    if use_sqlite:
+        import os
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        db_path = os.path.join(base_dir, "logistica.db")
+        
+        if not os.path.exists(db_path):
+            print("Base de datos no encontrada. Ejecutando crear_bd.py para generarla...")
+            import subprocess
+            crear_bd_script = os.path.join(base_dir, "crear_bd.py")
+            subprocess.run(["python", crear_bd_script], cwd=base_dir)
+            
+        from logistica.infrastructure.sqlite_shipment import ShipmentRepositorySQLite
+        from logistica.infrastructure.sqlite_center import CenterRepositorySQLite
+        from logistica.infrastructure.sqlite_route import RouteRepositorySQLite
+        
+        return {
+            "shipments": ShipmentRepositorySQLite(db_path),
+            "routes": RouteRepositorySQLite(db_path),
+            "centers": CenterRepositorySQLite(db_path)
+        }
 
     shipment_repo = ShipmentRepositoryMemory()
     center_repo = CenterRepositoryMemory()

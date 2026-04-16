@@ -18,11 +18,10 @@
 ### 🚛 Gestión de Rutas de Transporte
 - [UC-09: Crear Nueva Ruta](#uc-09-crear-nueva-ruta)
 - [UC-10: Listar Rutas Disponibles](#uc-10-listar-rutas-disponibles)
-- [UC-11: Asignar Envío a Ruta](#uc-11-asignar-envío-a-ruta)
-- [UC-12: Asignar Múltiples Envíos a Ruta](#uc-12-asignar-múltiples-envíos-a-ruta)
-- [UC-13: Retirar Envío de Ruta](#uc-13-retirar-envío-de-ruta)
-- [UC-14: Despachar Ruta](#uc-14-despachar-ruta)
-- [UC-15: Completar Ruta](#uc-15-completar-ruta)
+- [UC-11: Asignar Envíos a Ruta](#uc-11-asignar-envíos-a-ruta)
+- [UC-12: Retirar Envío de Ruta](#uc-12-retirar-envío-de-ruta)
+- [UC-13: Despachar Ruta](#uc-13-despachar-ruta)
+- [UC-14: Completar Ruta](#uc-14-completar-ruta)
 
 ---
 
@@ -85,7 +84,7 @@
 - Existe un envío con el código proporcionado
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Ver detalles de un envío" (opción 8)
+1. El operador selecciona "Ver detalles de un envío" (opción 6)
 2. El sistema solicita código de seguimiento
 3. El operador introduce el código
 4. El sistema recupera el envío
@@ -118,7 +117,7 @@
 
 #### 🔄 Flujo Principal
 
-1. El operador selecciona "Listar envíos" (opción 7)
+1. El operador selecciona "Listar envíos" (opción 5)
 2. El sistema recupera todos los envíos
 3. El sistema ordena por código de seguimiento (case-insensitive)
 4. El sistema muestra para cada envío:
@@ -150,7 +149,7 @@
 - La transición de estado es válida según reglas de negocio
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Actualizar estado de envío" (opción 4)
+1. El operador selecciona "Actualizar estado de envío" (opción 2)
 2. El sistema solicita:
    - Código de seguimiento
    - Nuevo estado (REGISTERED, IN_TRANSIT, DELIVERED)
@@ -199,7 +198,7 @@ VALID_TRANSITIONS = {
 - La operación es permitida según el tipo de envío
 
 #### 🔄 Flujo Principal (Aumentar)
-1. El operador selecciona "Aumentar prioridad del envío" (opción 5)
+1. El operador selecciona "Aumentar prioridad del envío" (opción 3)
 2. El sistema solicita código de seguimiento
 3. El operador introduce el código
 4. El sistema valida:
@@ -210,7 +209,7 @@ VALID_TRANSITIONS = {
 6. El sistema confirma la operación
 
 #### 🔄 Flujo Principal (Disminuir)
-1. El operador selecciona "Disminuir prioridad del envío" (opción 6)
+1. El operador selecciona "Disminuir prioridad del envío" (opción 4)
 2. Seguir pasos 2-6 similares, validando que no baje del mínimo
 
 #### ⚠️ Flujos Alternativos
@@ -247,7 +246,7 @@ VALID_TRANSITIONS = {
 - No existe otro centro con el mismo ID
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Registrar centro" (opción 9)
+1. El operador selecciona "Registrar centro" (opción 7)
 2. El sistema solicita:
    - Identificador del centro
    - Nombre del centro
@@ -274,7 +273,7 @@ VALID_TRANSITIONS = {
 - Ninguna específica
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Listar centros" (opción 10)
+1. El operador selecciona "Listar centros" (opción 8)
 2. El sistema recupera todos los centros
 3. El sistema muestra para cada centro:
    - Identificador
@@ -295,7 +294,7 @@ VALID_TRANSITIONS = {
 - Existe el centro con el ID proporcionado
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Ver envíos en un centro" (opción 11)
+1. El operador selecciona "Ver envíos en un centro" (opción 9)
 2. El sistema solicita identificador del centro
 3. El operador introduce el ID
 4. El sistema valida existencia del centro
@@ -331,7 +330,7 @@ VALID_TRANSITIONS = {
 - No existe otra ruta con el mismo ID
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Crear ruta" (opción 12)
+1. El operador selecciona "Crear ruta" (opción 10)
 2. El sistema solicita:
    - Identificador de la ruta
    - ID del centro de origen
@@ -371,7 +370,7 @@ VALID_TRANSITIONS = {
 - Ninguna específica
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Listar rutas" (opción 13)
+1. El operador selecciona "Listar rutas" (opción 11)
 2. El sistema recupera todas las rutas
 3. El sistema muestra para cada ruta:
    - Identificador
@@ -383,11 +382,11 @@ VALID_TRANSITIONS = {
 - Operador conoce la red de rutas disponible
 - No se modifican datos
 
-### UC-11: Asignar Envío a Ruta
+### UC-11: Asignar Envíos a Ruta
 
 **ID**: `UC-11`
 **Actor**: Operador Logístico
-**Descripción**: Asignar un envío específico a una ruta para su transporte.
+**Descripción**: Asignar uno o varios envíos simultáneamente a una ruta mediante un input separado por comas.
 
 #### 📋 Precondiciones
 - Existen el envío y la ruta
@@ -396,66 +395,31 @@ VALID_TRANSITIONS = {
 - El envío está en estado REGISTERED o IN_TRANSIT
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Asignar envío a ruta" (opción 2)
+1. El operador selecciona "Asignar envíos a una ruta" (opción 12)
 2. El sistema solicita:
-   - Código de seguimiento del envío
    - ID de la ruta
+   - Códigos de seguimiento separados por comas
 3. El operador introduce los datos
-4. El sistema valida:
-   - Existencia de envío y ruta
-   - Ruta activa
-   - Envío no asignado previamente
-5. El sistema asigna el envío a la ruta
-6. El sistema registra el envío en el inventario del centro origen
-7. El sistema confirma la asignación
+4. El sistema valida uno a uno la validez e inyecta la confirmación.
+5. El sistema confirma la asignación devolviendo una lista "OK" y "Error".
 
 #### ⚠️ Flujos Alternativos
 
 **FA-11a: Ruta inactiva**
 - En paso 4, si la ruta está finalizada
-- Sistema muestra: "La ruta 'X' no está activa"
-- Vuelve al paso 2
+- Sistema muestra en error: "La ruta 'X' no está activa"
 
 **FA-11b: Envío ya asignado**
 - En paso 4, si el envío ya tiene ruta
-- Sistema muestra: "El envío 'X' ya está asignado a una ruta"
-- Vuelve al paso 2
+- Sistema expulsa el código bajo la cabecera: "El envío 'X' ya está asignado a una ruta"
 
 #### 📋 Postcondiciones
-- Envío asignado a la ruta
-- Envío registrado en inventario del centro origen
-- Atributo `assigned_route` del envío actualizado
+- Todos los listados exitosos se asignan a la ruta
+- Envíos registrados en inventario del centro origen
 
-### UC-12: Asignar Múltiples Envíos a Ruta
+### UC-12: Retirar Envío de Ruta
 
 **ID**: `UC-12`
-**Actor**: Operador Logístico
-**Descripción**: Asignar varios envíos a una ruta en una sola operación, con informe de resultados.
-
-#### 📋 Precondiciones
-- Existe la ruta
-- La ruta está activa
-
-#### 🔄 Flujo Principal
-1. El operador selecciona "Asignar varios envíos a una ruta" (opción 14)
-2. El sistema solicita:
-   - ID de la ruta
-   - Códigos de envío (separados por comas)
-3. El operador introduce los datos
-4. Para cada envío, el sistema intenta asignarlo
-5. El sistema genera reporte con:
-   - Envíos asignados correctamente
-   - Envíos con error (con motivo)
-6. El sistema muestra el reporte
-
-#### 📋 Postcondiciones
-- Envíos válidos asignados a la ruta
-- Reporte detallado de la operación
-- No se revierten asignaciones exitosas por errores
-
-### UC-13: Retirar Envío de Ruta
-
-**ID**: `UC-13`
 **Actor**: Operador Logístico
 **Descripción**: Remover un envío de la ruta a la que está asignado.
 
@@ -465,9 +429,9 @@ VALID_TRANSITIONS = {
 - La ruta está activa (o no, según implementación)
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Quitar envío de ruta" (opción 3)
+1. El operador selecciona "Quitar envío de ruta" (opción 13)
 2. El sistema solicita código de seguimiento
-3. El operador introduce el código
+3. El operador introduce el código y la ruta.
 4. El sistema valida:
    - Existencia del envío
    - Que tenga ruta asignada
@@ -478,19 +442,18 @@ VALID_TRANSITIONS = {
 
 #### ⚠️ Flujos Alternativos
 
-**FA-13a: Envío sin ruta**
+**FA-12a: Envío sin ruta**
 - En paso 4, si el envío no tiene ruta asignada
-- Sistema muestra: "El envío 'X' no está asignado a ninguna ruta"
-- Vuelve al paso 2
+- Sistema expulsa fallo indicando que no hay ruta asignada.
 
 #### 📋 Postcondiciones
 - Envío sin ruta asignada
 - Envío removido del inventario del centro origen
 - Ruta actualizada (sin el envío)
 
-### UC-14: Despachar Ruta
+### UC-13: Despachar Ruta
 
-**ID**: `UC-14`
+**ID**: `UC-13`
 **Actor**: Operador Logístico
 **Descripción**: Marcar una ruta como "en tránsito", actualizando el estado de sus envíos.
 
@@ -501,7 +464,7 @@ VALID_TRANSITIONS = {
 - La ruta no ha sido ya despachada
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Despachar ruta" (opción 15)
+1. El operador selecciona "Despachar ruta" (opción 14)
 2. El sistema solicita ID de la ruta
 3. El operador introduce el ID
 4. El sistema valida:
@@ -515,23 +478,19 @@ VALID_TRANSITIONS = {
 
 #### ⚠️ Flujos Alternativos
 
-**FA-14a: Ruta ya despachada**
+**FA-13a: Ruta ya despachada**
 - En paso 4, si todos los envíos ya están IN_TRANSIT
 - Sistema muestra: "La ruta 'X' ya ha sido despachada"
 - Vuelve al paso 2
-
-**FA-14b: Ruta sin envíos**
-- En paso 4, si la ruta no tiene envíos
-- Sistema puede permitirlo o rechazarlo (depende de implementación)
 
 #### 📋 Postcondiciones
 - Todos los envíos de la ruta en estado IN_TRANSIT
 - Envíos removidos del inventario del centro origen
 - Ruta sigue activa (puede completarse después)
 
-### UC-15: Completar Ruta
+### UC-14: Completar Ruta
 
-**ID**: `UC-15`
+**ID**: `UC-14`
 **Actor**: Operador Logístico
 **Descripción**: Finalizar una ruta, marcando sus envíos como entregados en el centro destino.
 
@@ -541,7 +500,7 @@ VALID_TRANSITIONS = {
 - La ruta ha sido despachada (envíos en IN_TRANSIT)
 
 #### 🔄 Flujo Principal
-1. El operador selecciona "Completar ruta" (opción 16)
+1. El operador selecciona "Completar ruta" (opción 15)
 2. El sistema solicita ID de la ruta
 3. El operador introduce el ID
 4. El sistema valida:
@@ -556,7 +515,7 @@ VALID_TRANSITIONS = {
 
 #### ⚠️ Flujos Alternativos
 
-**FA-15a: Ruta ya finalizada**
+**FA-14a: Ruta ya finalizada**
 - En paso 4, si la ruta ya está finalizada
 - Sistema muestra: "La ruta 'X' ya se encuentra finalizada"
 - Vuelve al paso 2
@@ -572,22 +531,21 @@ VALID_TRANSITIONS = {
 | Opción | Caso de Uso | Actor Principal | Precondiciones Clave |
 | :--- | :--- | :--- | :--- |
 | **1** | UC-01: Crear Envío | Operador | Código único |
-| **2** | UC-11: Asignar a Ruta | Operador | Ruta activa, envío sin asignar |
-| **3** | UC-13: Quitar de Ruta | Operador | Envío asignado a ruta |
-| **4** | UC-04: Cambiar Estado | Operador/Sistema | Transición válida |
-| **5** | UC-05: Aumentar Prioridad | Operador | No sea Express, no sea prioridad 3 |
-| **6** | UC-05: Disminuir Prioridad | Operador | No sea prioridad 1 (o 2 si frágil) |
-| **7** | UC-03: Listar Envíos | Operador | - |
-| **8** | UC-02: Consultar Envío | Operador | Envío existente |
-| **9** | UC-06: Crear Centro | Administrador | ID único de centro |
-| **10** | UC-07: Listar Centros | Operador | - |
-| **11** | UC-08: Consultar Centro | Operador | Centro existente |
-| **12** | UC-09: Crear Ruta | Planificador | Centros existentes y diferentes |
-| **13** | UC-10: Listar Rutas | Operador | - |
-| **14** | UC-12: Consultar Ruta | Operador | Ruta activa |
-| **15** | UC-14: Despachar Ruta | Operador | Ruta activa con envíos |
-| **16** | UC-15: Finalizar Ruta | Operador | Ruta activa despachada |
-| **17** | Salir del Sistema | Todos | - |
+| **2** | UC-04: Cambiar Estado | Operador/Sistema | Transición válida |
+| **3** | UC-05: Aumentar Prioridad | Operador | No sea Express, no sea prioridad 3 |
+| **4** | UC-05: Disminuir Prioridad | Operador | No sea prioridad 1 (o 2 si frágil) |
+| **5** | UC-03: Listar Envíos | Operador | - |
+| **6** | UC-02: Consultar Envío | Operador | Envío existente |
+| **7** | UC-06: Crear Centro | Administrador | ID único de centro |
+| **8** | UC-07: Listar Centros | Operador | - |
+| **9** | UC-08: Consultar Centro | Operador | Centro existente |
+| **10** | UC-09: Crear Ruta | Planificador | Centros existentes y diferentes |
+| **11** | UC-10: Listar Rutas | Operador | - |
+| **12** | UC-11: Asignar a Ruta | Operador | Ruta activa |
+| **13** | UC-12: Quitar de Ruta | Operador | Envío asignado a ruta |
+| **14** | UC-13: Despachar Ruta | Operador | Ruta activa con envíos |
+| **15** | UC-14: Finalizar Ruta | Operador | Ruta activa despachada |
+| **16** | Salir del Sistema | Todos | - |
 
 ## ⚠️ Errores Representativos y Su Significado
 
@@ -599,8 +557,8 @@ VALID_TRANSITIONS = {
 | **"Un envío frágil no puede tener prioridad inferior a 2."** | Violación de regla de negocio | Usar prioridad 2 o 3 para envíos frágiles |
 | **"Un envío express ya tiene prioridad máxima."** | Express siempre tiene prioridad 3 | No intentar modificar prioridad de Express |
 | **"El centro de origen y destino no pueden ser el mismo."** | Error de coherencia lógica | Seleccionar centros diferentes |
-| **"El envío 'X' ya está asignado a una ruta."** | El envío ya tiene una asignación | Retirar de la ruta actual primero (opción 3) |
-| **"No hay ruta asignada para eliminar."** | El envío no estaba en ninguna ruta | Verificar estado del envío (opción 8) |
+| **"El envío 'X' ya está asignado a una ruta."** | El envío ya tiene una asignación | Retirar de la ruta actual primero (opción 13) |
+| **"No hay ruta asignada para eliminar."** | El envío no estaba en ninguna ruta | Verificar estado del envío (opción 6) |
 | **"No se puede aumentar/disminuir la prioridad..."** | Límites de prioridad alcanzados | Consultar las reglas por tipo de envío |
-| **"No existe un centro con el identificador..."** | Centro no registrado | Verificar el ID o registrar el centro (opción 9) |
+| **"No existe un centro con el identificador..."** | Centro no registrado | Verificar el ID o registrar el centro (opción 7) |
 

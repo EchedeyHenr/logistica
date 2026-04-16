@@ -31,6 +31,25 @@ python -m unittest logistica.tests.test_shipment_service
 python -m unittest logistica.tests.test_route_service
 ```
 
+#### Ejecutar tests del repositorio SQLite
+```bash
+python -m unittest logistica.tests.test_sqlite_repositories
+```
+
+#### Ejecutar tests con Coverage
+Para medir la cobertura del código, asegúrate de tener instalada la herramienta `coverage` (`pip install coverage`).
+
+```bash
+# Ejecutar los tests recolectando datos de cobertura
+coverage run -m unittest discover -s logistica/tests
+
+# Ver el reporte resumido en la consola
+coverage report -m
+
+# Generar un reporte detallado en HTML (se crea en htmlcov/index.html)
+coverage html
+```
+
 ---
 
 ## 📋 Qué valida cada test
@@ -143,7 +162,11 @@ python -m unittest logistica.tests.test_route_service
 
 ### Capa Infrastructure
 
-- Probados indirectamente a través de los servicios con repositorios en memoria
+| Módulo / Repositorio | Tests | Cobertura |
+| :--- |:-----:| :--- |
+| **test_sqlite_repositories.py** |  9+  | Operaciones CRUD SQLite limpias (`__eq__`, excepciones). |
+
+- Además los repositorios de pruebas en memoria son probados indirectamente a través de los tests de Application `*_service`.
 ---
 
 ## 🔄 Pasos de Verificación Manual
@@ -172,7 +195,7 @@ python -m logistica.presentation.menu
 ```bash
 Dentro de la aplicación:
 
-1. Listar envíos (opción 7)
+1. Listar envíos (opción 5)
    ✅ Muestra 5 envíos iniciales
 
 2. Registrar nuevo envío (opción 1)
@@ -182,26 +205,26 @@ Dentro de la aplicación:
 3. Listar envíos nuevamente
    ✅ Ahora muestra 6 envíos, VRF100 al final
 
-4. Crear ruta (opción 12)
+4. Crear ruta (opción 10)
    ID: MAD16-BCN03-STD-189, Origen: MAD16, Destino: BCN03
    ✅ Crea ruta exitosamente
 
-5. Asignar envío a ruta (opción 2)
+5. Asignar envíos a ruta (opción 12)
    Envío: VRF100, Ruta: MAD16-BCN03-STD-189
    ✅ Asigna correctamente
 
-6. Ver detalles envío (opción 8)
+6. Ver detalles envío (opción 6)
    Código: VRF100
    ✅ Muestra ruta asignada MAD16-BCN03-STD-189
 
-7. Despachar ruta (opción 15)
+7. Despachar ruta (opción 14)
    Ruta: MAD16-BCN03-STD-189
    ✅ Despacha correctamente
 
 8. Ver detalles envío nuevamente
    ✅ Estado: IN_TRANSIT
 
-9. Completar ruta (opción 16)
+9. Completar ruta (opción 15)
    Ruta: MAD16-BCN03-STD-189
    ✅ Completa correctamente
 
@@ -214,7 +237,7 @@ Dentro de la aplicación:
 ```bash
 1. Intentar registrar envío duplicado
    Código: ABC123 (ya existe)
-   ✅ Error: "Ya existe un envío con el código de seguimiento 'ABC123'"
+   ✅ Error: "EntityAlreadyExistsError: Ya existe un envío con el código de seguimiento 'ABC123'"
 
 2. Intentar crear ruta con mismo origen/destino
    Origen: MAD16, Destino: MAD16
@@ -227,7 +250,7 @@ Dentro de la aplicación:
 
 4. Intentar disminuir prioridad de frágil a 1
    Envío: SHN114 (frágil, prioridad 2)
-   Opción: 6 (disminuir prioridad)
+   Opción: 4 (disminuir prioridad)
    ✅ Error: "La prioridad de un envío frágil no puede ser inferior a 2"
 ```
 

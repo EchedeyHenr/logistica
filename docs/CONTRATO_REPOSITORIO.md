@@ -16,9 +16,15 @@ Domain Layer (Contratos)
 └── RouteRepository (Interface)
 
 Infrastructure Layer (Implementaciones)
-├── ShipmentRepositoryMemory
-├── CenterRepositoryMemory
-└── RouteRepositoryMemory
+├── ShipmentRepositoryMemory / ShipmentRepositorySQLite
+├── CenterRepositoryMemory / CenterRepositorySQLite
+└── RouteRepositoryMemory / RouteRepositorySQLite
+
+### Excepciones de Dominio
+Todos los repositorios ahora utilizan un catálogo de excepciones personalizado en `infrastructure/errores.py`:
+- `EntityNotFoundError`: Al buscar una entidad que no existe o intentar actualizar algo inexistente.
+- `EntityAlreadyExistsError`: Al crear una entidad con un ID que ya consta en el almacén.
+- `PersistenceError`: Errores impredecibles del driver físico (ej: pérdida de conexión SQLite).
 
 ### Principios de Diseño
 1. **Dependency Inversion**: Domain define interfaces, Infrastructure las implementa
@@ -38,13 +44,27 @@ class ShipmentRepository:
     
     def add(self, shipment: Shipment) -> None:
         """
-        Almacena un nuevo envío o actualiza uno existente.
+        Almacena un nuevo envío.
         
         Args:
             shipment: Instancia de Shipment (o subtipo) a almacenar.
             
         Raises:
-            ValueError: Si el envío no es válido (depende de implementación).
+            EntityAlreadyExistsError: Si el código de seguimiento ya existe.
+            PersistenceError: Si ocurre un fallo en el motor físico.
+        """
+        raise NotImplementedError
+
+    def update(self, shipment: Shipment) -> None:
+        """
+        Guarda los cambios de estado de un envío existente.
+        
+        Args:
+            shipment: Instancia modificada a persistir.
+            
+        Raises:
+            EntityNotFoundError: Si el envío a actualizar no existe en el registro.
+            PersistenceError: Si la escritura física es interrumpida.
         """
         raise NotImplementedError
     
@@ -60,7 +80,7 @@ class ShipmentRepository:
         """
         raise NotImplementedError
     
-    def get_by_tracking_code(self, tracking_code: str) -> Optional[Shipment]:
+    def get_by_tracking_code(self, tracking_code: str) -> Shipment:
         """
         Recupera un envío por su código de seguimiento.
         
@@ -68,8 +88,10 @@ class ShipmentRepository:
             tracking_code: Código único del envío a buscar.
             
         Returns:
-            El objeto Shipment si se encuentra, None si no existe.
-            Nota: Puede devolver cualquier subtipo (FragileShipment, ExpressShipment).
+            El objeto Shipment (o subtipos).
+            
+        Raises:
+            EntityNotFoundError: Si el código de seguimiento provisto no está registrado.
         """
         raise NotImplementedError
     
@@ -137,10 +159,25 @@ class CenterRepository:
     
     def add(self, center: Center) -> None:
         """
-        Almacena un nuevo centro o actualiza uno existente.
+        Almacena un nuevo centro.
         
         Args:
             center: Instancia de Center a almacenar.
+            
+        Raises:
+            EntityAlreadyExistsError: Si el centro ya existe.
+        """
+        raise NotImplementedError
+
+    def update(self, center: Center) -> None:
+        """
+        Guarda los cambios sobre un centro existente (ej. inventario de paquetes).
+        
+        Args:
+            center: Instancia modificada a persistir.
+            
+        Raises:
+            EntityNotFoundError: Si el centro a actualizar no existe en el registro.
         """
         raise NotImplementedError
     
@@ -156,7 +193,7 @@ class CenterRepository:
         """
         raise NotImplementedError
     
-    def get_by_center_id(self, center_id: str) -> Optional[Center]:
+    def get_by_center_id(self, center_id: str) -> Center:
         """
         Recupera un centro por su identificador único.
         
@@ -164,7 +201,10 @@ class CenterRepository:
             center_id: ID del centro a buscar.
             
         Returns:
-            El objeto Center si se encuentra, None si no existe.
+            El objeto Center hallado.
+            
+        Raises:
+            EntityNotFoundError: Si el centro no se encuentra disponible.
         """
         raise NotImplementedError
     
@@ -221,10 +261,22 @@ class RouteRepository:
     
     def add(self, route: Route) -> None:
         """
-        Almacena una nueva ruta o actualiza una existente.
+        Almacena una nueva ruta.
         
         Args:
             route: Instancia de Route a almacenar.
+        """
+        raise NotImplementedError
+
+    def update(self, route: Route) -> None:
+        """
+        Actualiza el estado y asignaciones de envíos de la ruta existente.
+        
+        Args:
+            route: Instancia modificada de Route.
+            
+        Raises:
+            EntityNotFoundError: Si la ruta no consta en el almacén.
         """
         raise NotImplementedError
     
@@ -240,7 +292,7 @@ class RouteRepository:
         """
         raise NotImplementedError
     
-    def get_by_route_id(self, route_id: str) -> Optional[Route]:
+    def get_by_route_id(self, route_id: str) -> Route:
         """
         Recupera una ruta por su identificador único.
         
@@ -248,7 +300,10 @@ class RouteRepository:
             route_id: ID de la ruta a buscar.
             
         Returns:
-            El objeto Route si se encuentra, None si no existe.
+            El objeto Route si se encuentra.
+            
+        Raises:
+            EntityNotFoundError: Si el identificador de la ruta no existe.
         """
         raise NotImplementedError
     

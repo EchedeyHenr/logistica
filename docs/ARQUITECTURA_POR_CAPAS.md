@@ -119,7 +119,11 @@ from logistica.domain.shipment_repository import ShipmentRepository
 | `memory_shipment.py` | Repositorio en memoria de envíos | ShipmentRepository |
 | `memory_center.py` | Repositorio en memoria de centros | CenterRepository |
 | `memory_route.py` | Repositorio en memoria de rutas | RouteRepository |
-| `seed_data.py` | Datos iniciales para pruebas | - |
+| `sqlite_shipment.py` | Repositorio persistente en SQLite de envíos | ShipmentRepository |
+| `sqlite_center.py` | Repositorio persistente en SQLite de centros | CenterRepository |
+| `sqlite_route.py` | Repositorio persistente en SQLite de rutas | RouteRepository |
+| `errores.py` | Catálogo de excepciones de dominio específicas | - |
+| `seed_data.py` | Proveedor y selector configurable de DB o Memoria | - |
 
 ## 🎯 Responsabilidades por Capa
 

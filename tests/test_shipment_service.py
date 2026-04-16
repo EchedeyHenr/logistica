@@ -4,6 +4,7 @@ from logistica.infrastructure.memory_shipment import ShipmentRepositoryMemory
 from logistica.domain.shipment import Shipment
 from logistica.domain.fragile_shipment import FragileShipment
 from logistica.domain.express_shipment import ExpressShipment
+from logistica.infrastructure.errores import EntityAlreadyExistsError, EntityNotFoundError
 
 class TestShipmentService(unittest.TestCase):
 
@@ -45,9 +46,8 @@ class TestShipmentService(unittest.TestCase):
 
     def test_register_duplicate_tracking_code_raises(self):
         self.service.register_shipment("ABC123", "Alice", "Bob")
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(EntityAlreadyExistsError):
             self.service.register_shipment("ABC123", "Charlie", "Diana")
-        self.assertIn("Ya existe un envío", str(cm.exception))
 
     def test_register_invalid_type_raises(self):
         with self.assertRaises(ValueError):
@@ -70,7 +70,7 @@ class TestShipmentService(unittest.TestCase):
             self.service.update_shipment_status("ABC123", "DELIVERED")
 
     def test_update_status_shipment_not_found_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.update_shipment_status("NOEXIST", "IN_TRANSIT")
 
 
@@ -98,7 +98,7 @@ class TestShipmentService(unittest.TestCase):
             self.service.increase_shipment_priority("EXP123")
 
     def test_increase_priority_shipment_not_found_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.increase_shipment_priority("NOEXIST")
 
 
@@ -160,5 +160,5 @@ class TestShipmentService(unittest.TestCase):
         self.assertEqual(shipment.tracking_code, "ABC123")
 
     def test_get_shipment_non_existing_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.get_shipment("NOEXIST")

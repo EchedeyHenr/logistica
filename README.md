@@ -130,9 +130,10 @@ The system prevents invalid transitions to ensure process consistency.
 #### Included
 
 * Class modeling for Centers, Shipments (with hierarchy), Routes, and Users (Operators).
-* Business logic for cost calculation and priority management based on shipment type.
+* Cost calculation and priority management based on shipment type.
 * State validation system to prevent impossible transitions.
 * Management of the current location of each package within the network.
+* Persistent data storage using a relational SQLite database.
 
 #### Not Included
 
@@ -284,7 +285,13 @@ Every change in this project is handled through a branch-based workflow. Feature
  ┃ ┣ 📜memory_center.py          # In-memory implementation of the center repository.
  ┃ ┣ 📜memory_route.py           # In-memory implementation of the route repository.
  ┃ ┣ 📜memory_shipment.py        # In-memory implementation of the shipment repository.
+ ┃ ┣ 📜sqlite_center.py          # SQLite implementation of the center repository.
+ ┃ ┣ 📜sqlite_route.py           # SQLite implementation of the route repository.
+ ┃ ┣ 📜sqlite_shipment.py        # SQLite implementation of the shipment repository.
+ ┃ ┣ 📜errores.py                # Custom domain repository exceptions.
  ┃ ┣ 📜seed_data.py              # Loads initial data for testing and demonstration.
+ ┣ 📜crear_bd.py                 # Idempotent script for SQLite database initialization.
+ ┣ 📜logistica.db                # Auto-generated SQLite database file.
  ┗ 📂docs
    ┗ 📂images                    # Diagrams and visual documentation used in the README
 ```
@@ -380,6 +387,7 @@ Los operadores logísticos interactúan con el sistema para registrar, consultar
 * Lógica de negocio para el cálculo de costes y prioridades según el tipo de envío.
 * Sistema de validación de estados para evitar transiciones imposibles.
 * Gestión de la ubicación actual de cada paquete en la red.
+* Almacenamiento persistente mediante la base de datos relacional SQLite.
 
 #### No incluye
 
@@ -538,7 +546,13 @@ El siguiente diagrama de secuencia muestra cómo fluye una operación de envío 
  ┃ ┣ 📜memory_center.py          # Implementación en memoria del repositorio de centros.
  ┃ ┣ 📜memory_route.py           # Implementación en memoria del repositorio de rutas.
  ┃ ┣ 📜memory_shipment.py        # Implementación en memoria del repositorio de envíos.
+ ┃ ┣ 📜sqlite_center.py          # Implementación SQLite del repositorio de centros.
+ ┃ ┣ 📜sqlite_route.py           # Implementación SQLite del repositorio de rutas.
+ ┃ ┣ 📜sqlite_shipment.py        # Implementación SQLite del repositorio de envíos.
+ ┃ ┣ 📜errores.py                # Excepciones de dominio exclusivas.
  ┃ ┣ 📜seed_data.py              # Carga datos iniciales para pruebas y demostración.
+ ┣ 📜crear_bd.py                 # Script idempotente para inicialización y reseteo de SQLite.
+ ┣ 📜logistica.db                # Archivo físico autogenerado de la base de datos SQLite.
  ┗ 📂docs
    ┗ 📂images                    # Diagramas y documentación visual utilizada en el README
 ```
