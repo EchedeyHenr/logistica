@@ -5,6 +5,32 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-04-14 (Fase 04: Persistencia con SQLite)
+
+### Added
+- **Base de Datos SQLite**:
+  - `crear_bd.py` script para la creación inicial idempotent de `logistica.db`.
+  - Habilitados `PRAGMA foreign_keys = ON`.
+  - Esquema completo que mapea las entidades Center, Route, Shipment y su historial.
+- **Excepciones de Dominio**:
+  - `RepositoryError`, `EntityAlreadyExistsError`, `EntityNotFoundError`, y `PersistenceError` implementadas en `infrastructure/errores.py`.
+- **Implementaciones SQLite**:
+  - Repositorios en `infrastructure/sqlite_center.py`, `infrastructure/sqlite_route.py` y `infrastructure/sqlite_shipment.py` siguiendo transacciones con `with conn:`.
+- **Nuevos Tests**:
+  - `test_sqlite_repositories.py` para pruebas aisladas del controlador de BD.
+
+### Changed
+- Refactorización de **Capa Aplicación**:
+  - Control de excepciones centralizado. Validación delegada a excepciones de repositorio y actualización de persistencia vía `update()`.
+- Refactorización de **Manejo de Errores** en `menu.py` para capturar excepciones de dominio unificadas.
+- Reestructuración de la **UX/UI Consola**:
+  - Eliminada la opción redundante individual de asignaciones de ruta para usar de base la de envío múltiple.
+  - La opción quitar de la ruta se desvinculó de Envíos para integrarse coherentemente en el apartado de Rutas.
+  - El índice visual remapeado del 1 al 16 linealmente.
+- **Inyección de Dependencias**:
+  - `seed_data.py` modificado para alternar transparente a SQLite.
+- Contratos de repositorios actualizados añadiendo `.update()` obligatorio.
+
 ## [0.3.0] - 2026-03-03 (Fase 03: Pruebas Unitarias y Resoluciones de Bugs)
 
 ### Added
@@ -160,6 +186,7 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 | 0.1.0 | 2026-01-14 | ✅ Completado | Implementación inicial por capas |
 | 0.2.0 | 2026-01-28 | ✅ Completado | Documentación completa del sistema |
 | 0.3.0 | 2026-03-03 | ✅ Completado | Pruebas unitarias y resoluciones |
+| 0.4.0 | 2026-04-14 | ✅ Completado | Persistencia de datos en SQLite |
 | 1.0.0 | Por planificar | 📅 Planeado | Versión estable para producción |
 
 ---

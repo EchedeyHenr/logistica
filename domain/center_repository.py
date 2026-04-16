@@ -4,6 +4,9 @@ class CenterRepository:
     def add(self, center):
         raise NotImplementedError
 
+    def update(self, center):
+        raise NotImplementedError
+
     def remove(self, center_id):
         raise NotImplementedError
 

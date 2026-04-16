@@ -3,6 +3,7 @@ from logistica.application.center_service import CenterService
 from logistica.infrastructure.memory_center import CenterRepositoryMemory
 from logistica.infrastructure.memory_shipment import ShipmentRepositoryMemory
 from logistica.domain.shipment import Shipment
+from logistica.infrastructure.errores import EntityAlreadyExistsError, EntityNotFoundError
 
 class TestCenterService(unittest.TestCase):
 
@@ -22,9 +23,8 @@ class TestCenterService(unittest.TestCase):
 
     def test_register_center_duplicate_id_raises(self):
         self.service.register_center("MAD01", "Madrid", "Calle A")
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(EntityAlreadyExistsError):
             self.service.register_center("MAD01", "Barcelona", "Calle B")
-        self.assertIn("Ya hay registrado un centro", str(cm.exception))
 
     def test_register_center_empty_id_raises(self):
         with self.assertRaises(ValueError):
@@ -56,9 +56,8 @@ class TestCenterService(unittest.TestCase):
         self.assertEqual(center.center_id, "MAD01")
 
     def test_get_center_non_existing_raises(self):
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(EntityNotFoundError):
             self.service.get_center("NOEXIST")
-        self.assertIn("No existe un centro", str(cm.exception))
 
     def test_get_center_empty_id_raises(self):
         with self.assertRaises(ValueError):
@@ -78,15 +77,13 @@ class TestCenterService(unittest.TestCase):
     def test_receive_shipment_center_not_found_raises(self):
         shipment = Shipment("ABC123", "Alice", "Bob")
         self.shipment_repo.add(shipment)
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(EntityNotFoundError):
             self.service.receive_shipment("ABC123", "NOEXIST")
-        self.assertIn("No existe un centro", str(cm.exception))
 
     def test_receive_shipment_shipment_not_found_raises(self):
         self.service.register_center("MAD01", "Madrid", "Calle A")
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(EntityNotFoundError):
             self.service.receive_shipment("NOEXIST", "MAD01")
-        self.assertIn("No hay ningún envío", str(cm.exception))
 
     def test_receive_shipment_empty_tracking_code_raises(self):
         self.service.register_center("MAD01", "Madrid", "Calle A")
@@ -124,12 +121,12 @@ class TestCenterService(unittest.TestCase):
     def test_dispatch_shipment_center_not_found_raises(self):
         shipment = Shipment("ABC123", "Alice", "Bob")
         self.shipment_repo.add(shipment)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.dispatch_shipment("ABC123", "NOEXIST")
 
     def test_dispatch_shipment_shipment_not_found_raises(self):
         self.service.register_center("MAD01", "Madrid", "Calle A")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.dispatch_shipment("NOEXIST", "MAD01")
 
 
@@ -150,7 +147,7 @@ class TestCenterService(unittest.TestCase):
         self.assertIn("XYZ789", codes)
 
     def test_list_shipments_in_center_center_not_found_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.list_shipments_in_center("NOEXIST")
 
     def test_list_shipments_in_center_empty_id_raises(self):

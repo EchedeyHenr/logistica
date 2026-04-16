@@ -64,10 +64,7 @@ class ShipmentService:
         """
 
         # Regla de negocio RN-001: unicidad del código de seguimiento
-        # Consulta al repositorio antes de crear para evitar duplicados
-        # Esto es validación a nivel de aplicación, no del dominio
-        if self._repo.get_by_tracking_code(tracking_code) is not None:
-            raise ValueError(f"Ya existe un envío con el código de seguimiento '{tracking_code}'.")
+        # La validación se delega al repositorio que lanzará EntityAlreadyExistsError
 
         # Normalizar tipo de envío para comparación case-insensitive
         shipment_type = shipment_type.lower()
@@ -102,10 +99,8 @@ class ShipmentService:
             ValueError: Si no se encuentra un envío con ese código.
         """
 
-        # Validación de aplicación: el envío debe existir
+        # Validación de aplicación: el envío debe existir (lanza EntityNotFoundError si no existe)
         shipment = self._repo.get_by_tracking_code(tracking_code)
-        if shipment is None:
-            raise ValueError(f"No hay ningún envío con el código de seguimiento '{tracking_code}'.")
 
         # Delegar al dominio: El servicio no valida la transición
         # Shipment.update_status() valida RN-007 internamente
@@ -113,7 +108,7 @@ class ShipmentService:
         shipment.update_status(new_status)
 
         # Persistir cambios (el envío ya fue modificado)
-        self._repo.add(shipment)
+        self._repo.update(shipment)
 
 
     def increase_shipment_priority(self, tracking_code):
@@ -136,8 +131,6 @@ class ShipmentService:
 
         # Validación de aplicación: existencia del envío
         shipment = self._repo.get_by_tracking_code(tracking_code)
-        if shipment is None:
-            raise ValueError(f"No hay ningún envío con el código de seguimiento '{tracking_code}'.")
 
         # Delegar al dominio: Polimorfismo en acción
         # Cada tipo de envío (Shipment, FragileShipment, ExpressShipment)
@@ -145,7 +138,7 @@ class ShipmentService:
         # ExpressShipment lanzará ValueError (RN-005)
         shipment.increase_priority()
 
-        self._repo.add(shipment)
+        self._repo.update(shipment)
 
 
     def decrease_shipment_priority(self, tracking_code):
@@ -167,14 +160,12 @@ class ShipmentService:
 
         # Validación de aplicación: existencia del envío
         shipment = self._repo.get_by_tracking_code(tracking_code)
-        if shipment is None:
-            raise ValueError(f"No hay ningún envío con el código de seguimiento '{tracking_code}'.")
 
         # DELEGAR AL DOMINIO: Polimorfismo
         # FragileShipment.decrease_priority() valida RN-006
         shipment.decrease_priority()
 
-        self._repo.add(shipment)
+        self._repo.update(shipment)
 
 
     def list_shipments(self):
@@ -233,7 +224,5 @@ class ShipmentService:
         """
 
         # Consultar repositorio
-        shipment = self._repo.get_by_tracking_code(tracking_code)
-        if shipment is None:
-            raise ValueError(f"No existe el envío con código de seguimiento '{tracking_code}'.")
-        return shipment
+        # get_by_tracking_code lanza EntityNotFoundError si no existe
+        return self._repo.get_by_tracking_code(tracking_code)

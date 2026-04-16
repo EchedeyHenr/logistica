@@ -4,6 +4,9 @@ class RouteRepository:
     def add(self, route):
         raise NotImplementedError
 
+    def update(self, route):
+        raise NotImplementedError
+
     def remove(self, route_id):
         raise NotImplementedError
 

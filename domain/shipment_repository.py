@@ -4,6 +4,9 @@ class ShipmentRepository:
     def add(self, shipment):
         raise NotImplementedError
 
+    def update(self, shipment):
+        raise NotImplementedError
+
     def remove(self, tracking_code):
         raise NotImplementedError
 

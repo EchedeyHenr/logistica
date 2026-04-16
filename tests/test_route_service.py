@@ -6,6 +6,7 @@ from logistica.infrastructure.memory_route import RouteRepositoryMemory
 from logistica.infrastructure.memory_center import CenterRepositoryMemory
 from logistica.infrastructure.memory_shipment import ShipmentRepositoryMemory
 from logistica.domain.shipment import Shipment
+from logistica.infrastructure.errores import EntityAlreadyExistsError, EntityNotFoundError
 
 class TestRouteService(unittest.TestCase):
 
@@ -34,19 +35,16 @@ class TestRouteService(unittest.TestCase):
     def test_create_route_duplicate_id_raises(self):
         route_id = "MAD01-BCN02-STD-001"
         self.service.create_route(route_id, "MAD01", "BCN02")
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(EntityAlreadyExistsError):
             self.service.create_route(route_id, "MAD01", "BCN02")
-        self.assertIn("Ya existe una ruta", str(cm.exception))
 
     def test_create_route_origin_not_found_raises(self):
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(EntityNotFoundError):
             self.service.create_route("MAD01-BCN02-STD-001", "NOEXIST", "BCN02")
-        self.assertEqual(str(cm.exception), "El centro de origen no existe.")
 
     def test_create_route_destination_not_found_raises(self):
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(EntityNotFoundError):
             self.service.create_route("MAD01-BCN02-STD-001", "MAD01", "NOEXIST")
-        self.assertEqual(str(cm.exception), "El centro de destino no existe.")
 
     def test_create_route_same_origin_dest_raises(self):
         with self.assertRaises(ValueError) as cm:
@@ -79,7 +77,7 @@ class TestRouteService(unittest.TestCase):
         self.assertEqual(route.route_id, route_id)
 
     def test_get_route_non_existing_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.get_route("MAD01-BCN02-STD-999")  # no existe
 
     def test_get_route_empty_id_raises(self):
@@ -107,13 +105,13 @@ class TestRouteService(unittest.TestCase):
 
     def test_assign_shipment_route_not_found_raises(self):
         self.shipment_service.register_shipment("ABC123", "A", "B")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.assign_shipment_to_route("ABC123", "MAD01-BCN02-STD-999")
 
     def test_assign_shipment_shipment_not_found_raises(self):
         route_id = "MAD01-BCN02-STD-001"
         self.service.create_route(route_id, "MAD01", "BCN02")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.assign_shipment_to_route("NOEXIST", route_id)
 
     def test_assign_shipment_route_inactive_raises(self):
@@ -169,7 +167,7 @@ class TestRouteService(unittest.TestCase):
 
     def test_remove_shipment_route_not_found_raises(self):
         self.shipment_service.register_shipment("ABC123", "A", "B")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.remove_shipment_from_route("ABC123", "MAD01-BCN02-STD-999")
 
     # Test dispatch_route
@@ -216,7 +214,7 @@ class TestRouteService(unittest.TestCase):
         self.assertTrue(route.is_active)  # sigue activa porque no se completa
 
     def test_dispatch_route_route_not_found_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.dispatch_route("MAD01-BCN02-STD-999")
 
     # Test complete_route
@@ -256,5 +254,5 @@ class TestRouteService(unittest.TestCase):
         self.assertFalse(route.is_active)
 
     def test_complete_route_route_not_found_raises(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.service.complete_route("MAD01-BCN02-STD-999")

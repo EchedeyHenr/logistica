@@ -11,6 +11,7 @@ Attributes:
 """
 
 from logistica.domain.route_repository import RouteRepository
+from logistica.infrastructure.errores import EntityAlreadyExistsError, EntityNotFoundError
 
 class RouteRepositoryMemory(RouteRepository):
     """
@@ -44,7 +45,15 @@ class RouteRepositoryMemory(RouteRepository):
             TypeError: Si el parámetro `route` no es una instancia de Route.
         """
         key = route.route_id.lower()
+        if key in self._by_route_id:
+            raise EntityAlreadyExistsError(f"Ya existe una ruta con identificador '{route.route_id}'")
         self._by_route_id[key] = route
+
+    def update(self, route):
+        """
+        En memoria el objeto ya está mutado por referencia; no hace nada.
+        """
+        pass
 
     def remove(self, route_id):
         """
@@ -58,13 +67,13 @@ class RouteRepositoryMemory(RouteRepository):
         """
         route_id = (route_id or "").strip()
         if not route_id:
-            return False
+            raise EntityNotFoundError("El ID de la ruta no puede estar vacío.")
 
         key = route_id.lower()
         if key in self._by_route_id:
             del self._by_route_id[key]
-            return True
-        return False
+        else:
+            raise EntityNotFoundError(f"No existe una ruta con el identificador '{route_id}'.")
 
     def get_by_route_id(self, route_id):
         """
@@ -78,8 +87,11 @@ class RouteRepositoryMemory(RouteRepository):
         """
         route_id = (route_id or "").strip()
         if not route_id:
-            return None
-        return self._by_route_id.get(route_id.lower())
+            raise EntityNotFoundError("El ID de la ruta no puede estar vacío.")
+        route = self._by_route_id.get(route_id.lower())
+        if route is None:
+            raise EntityNotFoundError(f"No existe una ruta con el identificador '{route_id}'.")
+        return route
 
     def list_all(self):
         """

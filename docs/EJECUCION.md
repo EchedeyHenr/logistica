@@ -29,6 +29,7 @@ Desde la raíz del proyecto:
 ```bash
 python -m logistica.presentation.menu
 ```
+> **Nota de Inicialización SQLite**: Al ejecutarse por primera vez, el sistema autodetecta su inexistencia e inicializará localmente el archivo `logistica.db` mediante el script interno `crear_bd.py`.
 
 ## 🧪 Ejecutar los Tests y Cobertura
 
@@ -47,7 +48,7 @@ coverage html
 
 ### Ejemplo 1: Ciclo Completo de un Envío
 
-1. Registrar centro (opción 9)
+1. Registrar centro (opción 7)
    - ID: VAL01
    - Nombre: Valencia Norte
    - Ubicación: Calle Ejemplo 123
@@ -59,22 +60,22 @@ coverage html
    - Prioridad: 2
    - Tipo: standard
 
-3. Crear ruta (opción 12)
+3. Crear ruta (opción 10)
    - ID: VAL01-MAD16-STD-001
    - Origen: VAL01
    - Destino: MAD16 (ya existe en datos iniciales)
 
-4. Asignar envío a ruta (opción 2)
+4. Asignar envío a ruta (opción 12)
    - Código: TES001
    - Ruta: VAL01-MAD16-STD-001
 
-5. Despachar ruta (opción 15)
+5. Despachar ruta (opción 14)
    - Ruta: VAL01-MAD16-STD-001
 
-6. Completar ruta (opción 16)
+6. Completar ruta (opción 15)
    - Ruta: VAL01-MAD16-STD-001
 
-7. Verificar envío entregado (opción 8)
+7. Verificar envío entregado (opción 6)
    - Código: TES001
 
 ### Ejemplo 2: Gestión de Prioridades
@@ -83,10 +84,10 @@ coverage html
    - Tipo: fragile
    - Prioridad: 2 (mínimo permitido)
 
-2. Aumentar prioridad (opción 5)
+2. Aumentar prioridad (opción 3)
    - Código: [código del envío]
 
-3. Disminuir prioridad (opción 6)
+3. Disminuir prioridad (opción 4)
    - Nota: No podrá bajar de 2 (regla de negocio)
 
 ## ⚠️ Errores comunes y Soluciones
@@ -113,11 +114,11 @@ python -m logistica.presentation.menu
 
 ### Error: "Ya existe un envío con el código..."
 
-```
-ValueError: Ya existe un envío con el código de seguimiento 'ABC123'
+```text
+EntityAlreadyExistsError: Ya existe un envío con el código de seguimiento 'ABC123'
 ```
 
-**Solución:** Los códigos de seguimiento deben ser únicos. Usa uno diferente o consulta los existentes con la opción 7.
+**Solución:** Los códigos de seguimiento deben ser únicos. Usa uno diferente o consulta los existentes con la opción 5.
 
 ### Error: "Transición no permitida"
 

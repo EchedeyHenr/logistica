@@ -69,20 +69,12 @@ class RouteService:
             raise ValueError("El ID de la ruta no puede estar vacío.")
 
         # Validación de aplicación: unicidad de route_id
-        # Consultar antes de crear para evitar duplicados
-        route = self._route_repo.get_by_route_id(route_id)
-        if route is not None:
-            raise ValueError(f"Ya existe una ruta con el identificador '{route_id}'.")
+        # La validación se delega al repositorio que lanzará EntityAlreadyExistsError
 
         # Validación de aplicación: centros deben existir
         # El servicio valida esto porque requiere coordinación entre repositorios
         origin = self._center_repo.get_by_center_id(origin_center_id)
-        if not origin:
-            raise ValueError("El centro de origen no existe.")
-
         destination = self._center_repo.get_by_center_id(destination_center_id)
-        if not destination:
-            raise ValueError("El centro de destino no existe.")
 
         # Crear ruta: delegar al dominio (constructor valida RN-013)
         # Route.__init__ valida que origen ≠ destino
@@ -137,10 +129,7 @@ class RouteService:
         if not route_id.strip():
             raise ValueError("El ID de la ruta no puede estar vacío.")
 
-        route = self._route_repo.get_by_route_id(route_id)
-        if route is None:
-            raise ValueError(f"No existe una ruta con el identificador '{route_id}'.")
-        return route
+        return self._route_repo.get_by_route_id(route_id)
 
 
     def assign_shipment_to_route(self, tracking_code, route_id):
@@ -170,16 +159,12 @@ class RouteService:
             raise ValueError("El código de seguimiento del envío no puede estar vacío.")
 
         route = self._route_repo.get_by_route_id(route_id)
-        if route is None:
-            raise ValueError(f"No existe una ruta con el identificador '{route_id}'.")
 
         # Regla de negocio RN-015: solo rutas activas aceptan envíos
         if not route.is_active:
             raise ValueError(f"La ruta '{route_id}' no está activa.")
 
         shipment = self._shipment_repo.get_by_tracking_code(tracking_code)
-        if shipment is None:
-            raise ValueError(f"No hay ningún envío con el código de seguimiento '{tracking_code}'.")
 
         # Regla de negocio RN-016: verificar que el envío no esté ya asignado
         # Esta validación podría estar en el dominio, pero requiere acceso al repositorio
@@ -194,11 +179,10 @@ class RouteService:
         # ya llama a shipment.assign_route() internamente)
         shipment.assign_route(route_id)
 
-        # Persistir cambios en ambas entidades
-        # Orden: primero route (contiene la lista), luego shipment
-        # En transacción real, esto sería atómico (o se guarda todo, o no se guarda nada)
-        self._route_repo.add(route)
-        self._shipment_repo.add(shipment)
+        # Persistir cambios en entidades usando update
+        self._route_repo.update(route)
+        self._shipment_repo.update(shipment)
+        self._center_repo.update(route.origin_center)
 
 
     def remove_shipment_from_route(self, tracking_code, route_id):
@@ -224,12 +208,8 @@ class RouteService:
             raise ValueError("El código de seguimiento del envío no puede estar vacío.")
 
         route = self._route_repo.get_by_route_id(route_id)
-        if route is None:
-            raise ValueError(f"No existe una ruta con el identificador '{route_id}'.")
 
         shipment = self._shipment_repo.get_by_tracking_code(tracking_code)
-        if shipment is None:
-            raise ValueError(f"No hay ningún envío con el código de seguimiento '{tracking_code}'.")
 
         # Validación crítica: el envío debe estar asignado a ESTA ruta
         # Previene retirar un envío de una ruta a la que no pertenece
@@ -239,8 +219,9 @@ class RouteService:
         # Operación bidireccional: actualizar ambos lados
         route.remove_shipment(shipment)  # ya llama a shipment.remove_route() internamente
 
-        self._route_repo.add(route)
-        self._shipment_repo.add(shipment)
+        self._route_repo.update(route)
+        self._shipment_repo.update(shipment)
+        self._center_repo.update(route.origin_center)
 
 
     def dispatch_route(self, route_id):
@@ -269,8 +250,6 @@ class RouteService:
             raise ValueError("El ID de la ruta no puede estar vacío.")
 
         route = self._route_repo.get_by_route_id(route_id)
-        if route is None:
-            raise ValueError(f"No existe una ruta con el identificador '{route_id}'.")
 
         if not route.is_active:
             raise ValueError(f"La ruta '{route_id}' ya ha sido completada y no se puede despachar.")
@@ -295,6 +274,11 @@ class RouteService:
             # 2. Actualiza estado del envío a IN_TRANSIT
             # 3. Remueve del inventario del centro
             origin_center.dispatch_shipment(shipment)
+        
+        # Guardar en repositorio actualizando inventario del origen y cambios en cada envío
+        self._center_repo.update(origin_center)
+        for shipment in shipments:
+            self._shipment_repo.update(shipment)
 
 
     def complete_route(self, route_id):
@@ -323,8 +307,6 @@ class RouteService:
             raise ValueError("El ID de la ruta no puede estar vacío.")
 
         route = self._route_repo.get_by_route_id(route_id)
-        if route is None:
-            raise ValueError(f"No existe una ruta con el identificador '{route_id}'.")
 
         if not route.is_active:
             raise ValueError(f"La ruta '{route_id}' ya se encuentra finalizada.")
@@ -339,8 +321,8 @@ class RouteService:
         shipments = [self._shipment_repo.get_by_tracking_code(code) for code in tracking_codes]
         route.complete_route(shipments)
 
-        # Persistir cambios en la ruta y envios
-        # Los envíos ya fueron actualizados por el centro destino
-        self._route_repo.add(route)
+        # Persistir cambios usando update()
+        self._route_repo.update(route)
         for shipment in shipments:
-            self._shipment_repo.add(shipment)
+            self._shipment_repo.update(shipment)
+        self._center_repo.update(route.destination_center)

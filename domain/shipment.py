@@ -79,6 +79,16 @@ class Shipment:
         """Devuelve el código de seguimiento único."""
         return self.__tracking_code
 
+    def __eq__(self, other):
+        """Dos envíos son idénticos si comparten el mismo código de seguimiento."""
+        if not isinstance(other, Shipment):
+            return False
+        return self.tracking_code == other.tracking_code
+
+    def __hash__(self):
+        """Hash basado en la identidad única del envío."""
+        return hash(self.tracking_code)
+
     @property
     def sender(self):
         """Devuelve el nombre del remitente."""

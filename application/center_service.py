@@ -65,11 +65,8 @@ class CenterService:
         if not location.strip():
             raise ValueError("La ubicación del centro no puede estar vacía.")
 
-        # Regla de negocio RN-009: verificar unicidad de center_id
-        # Consultar repositorio antes de crear
-        center = self._center_repo.get_by_center_id(center_id)
-        if center is not None:
-            raise ValueError(f"Ya hay registrado un centro con el identificador '{center_id}'.")
+        # Regla de negocio RN-009: verificar unicidad de center_id delegada al repositorio
+        # que lanzará EntityAlreadyExistsError si el centro ya existe.
 
         # Crear centro: delegar al dominio (valida RN-010 internamente)
         # Center.__init__ valida que los parámetros sean strings no vacíos
@@ -114,9 +111,8 @@ class CenterService:
         if not center_id.strip():
             raise ValueError("El ID del centro no puede estar vacío.")
 
+        # El repositorio ya lanza EntityNotFoundError si no lo encuentra.
         center = self._center_repo.get_by_center_id(center_id)
-        if center is None:
-            raise ValueError(f"No existe un centro con el identificador '{center_id}'.")
         return center
 
     def receive_shipment(self, tracking_code, center_id):
@@ -144,12 +140,7 @@ class CenterService:
             raise ValueError("El código de seguimiento del envío no puede estar vacío.")
 
         center = self._center_repo.get_by_center_id(center_id)
-        if center is None:
-            raise ValueError(f"No existe un centro con el identificador '{center_id}'.")
-
         shipment = self._shipment_repo.get_by_tracking_code(tracking_code)
-        if shipment is None:
-            raise ValueError(f"No hay ningún envío con el código de seguimiento '{tracking_code}'.")
 
         # Delegar al dominio: Centro maneja la recepción
         # Center.receive_shipment() valida:
@@ -157,9 +148,9 @@ class CenterService:
         # 2. RN-011: que el envío no esté ya en el centro
         center.receive_shipment(shipment)
 
-        # Persistir cambios en el centro
+        # Persistir cambios en el centro usando update()
         # El envío no se modifica, solo se agrega a la lista del centro
-        self._center_repo.add(center)
+        self._center_repo.update(center)
 
     def dispatch_shipment(self, tracking_code, center_id):
         """
@@ -185,12 +176,7 @@ class CenterService:
             raise ValueError("El código de seguimiento del envío no puede estar vacío.")
 
         center = self._center_repo.get_by_center_id(center_id)
-        if center is None:
-            raise ValueError(f"No existe un centro con el identificador '{center_id}'.")
-
         shipment = self._shipment_repo.get_by_tracking_code(tracking_code)
-        if shipment is None:
-            raise ValueError(f"No hay ningún envío con el código de seguimiento '{tracking_code}'.")
 
         # Delegar al dominio: Centro maneja el despacho
         # Center.dispatch_shipment() valida:
@@ -199,9 +185,9 @@ class CenterService:
         # 3. Actualiza estado del envío a IN_TRANSIT
         center.dispatch_shipment(shipment)
 
-        # Persistir cambios en el centro
+        # Persistir cambios en el centro usando update()
         # El envío ya fue actualizado (estado) y persistido por el centro
-        self._center_repo.add(center)
+        self._center_repo.update(center)
 
     def list_shipments_in_center(self, center_id):
         """
@@ -222,8 +208,6 @@ class CenterService:
             raise ValueError("El ID del centro no puede estar vacío.")
 
         center = self._center_repo.get_by_center_id(center_id)
-        if center is None:
-            raise ValueError(f"No existe un centro con el identificador '{center_id}'.")
 
         # Delegar al centro: devuelve su lista interna de envíos
         # Center.list_shipments() devuelve copia para encapsulamiento
