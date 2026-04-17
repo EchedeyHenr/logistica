@@ -15,17 +15,17 @@ Vamos a repasar tus clases y qué atributos de cada una necesitamos guardar:
 
 | Atributo | Tipo en Python | Tipo en SQL | Notas |
 |---|---|---|---|
-| `tracking_code` | str | TEXT | Código único seguimiento (ej: ABC123) |
+| `tracking_code` | str | TEXT | Código único de seguimiento (ej: ABC123) |
 | `sender` | str | TEXT | Nombre del remitente |
 | `recipient` | str | TEXT | Nombre del destinatario |
 | `current_status` | str | TEXT | REGISTERED, IN_TRANSIT, DELIVERED |
 | `priority` | int | INTEGER | 1, 2 o 3 |
 | `assigned_route` | str | TEXT | ID de ruta asignada (FK) |
 | `status_history` | list[str] | TEXT | JSON array con historial de estados |
-| `shipment_type` | str | TEXT | Discriminador: STANDARD, EXPRESS, FRAGILE |
+| (discriminador) | — | TEXT | Columna `shipment_type` para distinguir el tipo: STANDARD, EXPRESS, FRAGILE |
 
 **ExpressShipment** — Hereda de Shipment
-- Prioridad fija: 3 (almacenada en discriminador)
+- Prioridad fija: 3
 
 **FragileShipment** — Hereda de Shipment
 - Prioridad mínima: 2 (validación en aplicación)
@@ -37,16 +37,16 @@ Vamos a repasar tus clases y qué atributos de cada una necesitamos guardar:
 | `center_id` | str | TEXT | Identificador único (ej: MAD01) |
 | `name` | str | TEXT | Nombre del centro |
 | `location` | str | TEXT | Ubicación física |
-| `_shipments` | list[Shipment] | (N:M vía shipments) | Relación con shipments |
+| `_shipments` | list[Shipment] | (1:N vía tabla auxiliar `center_inventory`) | Envíos presentes en el centro |
 
 **Route** (`domain/route.py`)
 
 | Atributo | Tipo en Python | Tipo en SQL | Notas |
 |---|---|---|---|
 | `route_id` | str | TEXT | ID único (ej: MAD01-BCN02-STD-001) |
-| `origin_center` | Center | TEXT | FK a center(center_id) |
-| `destination_center` | Center | TEXT | FK a center(center_id) |
-| `_shipments` | list[Shipment] | (N:M vía junction table) | Relación con shipments |
+| `origin_center` | Center | TEXT | FK a `centers(center_id)` (como `origin_center_id`) |
+| `destination_center` | Center | TEXT | FK a `centers(center_id)` (como `destination_center_id`) |
+| `_shipments` | list[Shipment] | (1:N vía columna `assigned_route` en `shipments`) | Envíos asignados a la ruta |
 | `_active` | bool | INTEGER | 1=activa, 0=completada |
 
 
@@ -63,12 +63,12 @@ Una **tabla** es como un diccionario de Python, pero guardado en disco:
 **Ejemplo:**
 ```
 Tabla: shipments
-┌──────────┬────────┬──────────┬────────────────┐
-│ tracking │ sender │ recipient│ current_status │
-├──────────┼────────┼──────────┼────────────────┤
+┌──────────┬────────-┬──────────┬────────────────┐
+│ tracking │ sender  │ recipient│ current_status │
+├──────────┼-────────┼──────────┼────────────────┤
 │ ABC123   │ Tienda A│ Cliente X│ REGISTERED     │
 │ DEF456   │ Tienda B│ Cliente Y│ IN_TRANSIT     │
-└──────────┴────────┴──────────┴────────────────┘
+└──────────┴────────-┴──────────┴────────────────┘
 ```
 
 ### Clave primaria (PRIMARY KEY)
@@ -185,6 +185,18 @@ Registra qué envíos están en cada centro en cada momento. Es una tabla de uni
 
 **¿Por qué `received_at` es TEXT?** SQLite almacena timestamps como strings en formato ISO 8601 (ej: "2026-04-17T10:00:00"). Es estándar y legible.
 
+### Diagrama relacional resultante
+
+Con el diseño de tablas descrito arriba, el esquema de la base de datos queda así:
+
+![Diagrama relacional Logística](diagrama_relacional_logistica.svg)
+
+El diagrama muestra las 4 tablas del sistema y sus relaciones:
+- **centers → routes** (1:N, doble): un centro puede ser origen de muchas rutas y destino de muchas rutas (`origin_center_id` y `destination_center_id`)
+- **routes → shipments** (1:N): una ruta puede transportar muchos envíos (`assigned_route`)
+- **centers → center_inventory** (1:N): un centro registra muchos envíos en su inventario
+- **shipments → center_inventory** (1:N): un envío puede aparecer en el inventario de varios centros a lo largo de su ciclo de vida
+
 
 ## Fase 5: SQL de creación de tablas
 
@@ -238,7 +250,7 @@ CREATE TABLE IF NOT EXISTS center_inventory (
 1. **centers** se crea primero porque no tiene claves foráneas
 2. **routes** se crea segunda porque necesita que centers ya exista
 3. **shipments** se crea tercera porque necesita que routes ya exista
-4. **center_inventory** se crea última porque necesita que both centers y shipments existan
+4. **center_inventory** se crea última porque necesita que centers y shipments existan
 
 
 ## Fase 6: Script de ejemplo para crear la base de datos
@@ -370,11 +382,11 @@ cursor.execute("""
 conn.commit()
 conn.close()
 
-print(f"Base de datos creada en: logistica.db")
+print("Base de datos creada en: logistica.db")
 ```
 
 **Características importantes:**
-- Elimina la BD existente para recrearla limpia.
+- Elimina la BD existente para recrearla limpia (idempotente)
 - Crea las tablas en el orden correcto
 - Inserta datos de ejemplo que puedes usar para probar
 - Activa integridad referencial con `PRAGMA foreign_keys = ON`
@@ -404,14 +416,19 @@ class ErrorPersistencia(ErrorRepositorio):
     pass
 ```
 
-**Ejemplo para `RepositorioShipments` — Método `add()`:**
+**Nota sobre el modelo actual de tu proyecto:** En tu implementación, los constructores de `Shipment` y sus subclases reciben solo los datos básicos (`tracking_code`, `sender`, `recipient` y opcionalmente `priority`). El resto de atributos (`current_status`, `status_history`, `assigned_route`) se inicializan con valores por defecto y solo se modifican mediante métodos del dominio (ej: `assign_route()`, `advance_status()`, etc.). Además, `shipment_type` no es un parámetro del constructor sino una `@property` de solo lectura (la clase base devuelve `"STANDARD"`, y las subclases la sobrescriben para devolver `"EXPRESS"` o `"FRAGILE"`).
+
+Esto implica que al **reconstruir** un envío desde la BD, primero creas el objeto con el constructor que corresponda y después restauras los atributos internos (`_current_status`, `_status_history`, `_assigned_route`) directamente.
+
+**Ejemplo para `ShipmentRepositorySQLite` — Método `add()`:**
 
 ```python
 import sqlite3
 import json
 from infrastructure.errores import ShipmentYaExisteError, ErrorPersistencia
 
-class RepositorioShipmentsSQLite:
+
+class ShipmentRepositorySQLite:
     def __init__(self, ruta_bd="logistica.db"):
         self._ruta_bd = ruta_bd
 
@@ -423,18 +440,20 @@ class RepositorioShipmentsSQLite:
                 cursor = conn.cursor()
                 cursor.execute("PRAGMA foreign_keys = ON")
                 cursor.execute(
-                    """INSERT INTO shipments 
-                       (tracking_code, sender, recipient, current_status, priority, 
+                    """INSERT INTO shipments
+                       (tracking_code, sender, recipient, current_status, priority,
                         assigned_route, status_history, shipment_type)
                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (shipment.tracking_code, 
-                     shipment.sender, 
-                     shipment.recipient,
-                     shipment.current_status, 
-                     shipment.priority,
-                     shipment.assigned_route, 
-                     json.dumps(shipment.status_history),
-                     shipment.shipment_type)  # ej: 'STANDARD', 'EXPRESS', 'FRAGILE'
+                    (
+                        shipment.tracking_code,
+                        shipment.sender,
+                        shipment.recipient,
+                        shipment.current_status,      # @property pública
+                        shipment.priority,            # @property pública
+                        shipment.assigned_route,      # @property pública
+                        json.dumps(shipment.get_status_history()),  # método público
+                        shipment.shipment_type,       # @property pública: STANDARD/EXPRESS/FRAGILE
+                    ),
                 )
         except sqlite3.IntegrityError as e:
             # IntegrityError → violación de PRIMARY KEY (tracking_code duplicado)
@@ -449,18 +468,23 @@ class RepositorioShipmentsSQLite:
 ```
 
 **Explicación:**
-1. Abre conexión a la BD: `conn = sqlite3.connect(self._ruta_bd)`
-2. Activa integridad referencial: `cursor.execute("PRAGMA foreign_keys = ON")`
-3. Usa `?` en la consulta SQL para parámetros (previene inyección SQL)
-4. Pasa los valores como tupla al segundo argumento de `execute()`
-5. Si hay un `IntegrityError` (clave primaria duplicada), transforma a `ShipmentYaExisteError`
-6. Si hay otro error técnico, transforma a `ErrorPersistencia`
-7. Cierra la conexión siempre (en el `finally`)
+1. Abre conexión a la BD: `conn = sqlite3.connect(self._ruta_bd)`.
+2. Activa integridad referencial: `cursor.execute("PRAGMA foreign_keys = ON")`.
+3. Usa `?` en la consulta SQL para parámetros (previene inyección SQL).
+4. Lee los valores desde las `@property` públicas del envío (o desde su método `get_status_history()` para el historial).
+5. Si hay un `IntegrityError` (clave primaria duplicada), transforma a `ShipmentYaExisteError`.
+6. Si hay otro error técnico, transforma a `ErrorPersistencia`.
+7. Cierra la conexión siempre (en el `finally`).
 
-**Ejemplo para `RepositorioShipments` — Método `get_by_tracking_code()`:**
+**Ejemplo para `ShipmentRepositorySQLite` — Método `get_by_tracking_code()`:**
 
 ```python
-from infrastructure.errores import ShipmentNoEncontradoError
+import json
+from infrastructure.errores import ShipmentNoEncontradoError, ErrorPersistencia
+from logistica.domain.shipment import Shipment
+from logistica.domain.express_shipment import ExpressShipment
+from logistica.domain.fragile_shipment import FragileShipment
+
 
     def get_by_tracking_code(self, tracking_code):
         """Recupera un envío por su código de seguimiento."""
@@ -469,9 +493,10 @@ from infrastructure.errores import ShipmentNoEncontradoError
             cursor = conn.cursor()
             cursor.execute("PRAGMA foreign_keys = ON")
             cursor.execute(
-                "SELECT tracking_code, sender, recipient, current_status, priority, "
-                "assigned_route, status_history, shipment_type FROM shipments WHERE tracking_code = ?",
-                (tracking_code,)
+                """SELECT tracking_code, sender, recipient, current_status, priority,
+                          assigned_route, status_history, shipment_type
+                   FROM shipments WHERE tracking_code = ?""",
+                (tracking_code,),
             )
             row = cursor.fetchone()
             if row is None:
@@ -486,30 +511,48 @@ from infrastructure.errores import ShipmentNoEncontradoError
 
     def _fila_a_shipment(self, row):
         """Convierte una fila de la BD en un objeto Shipment del tipo correcto."""
-        tracking_code, sender, recipient, current_status, priority, assigned_route, status_history, shipment_type = row
-        
-        # Reconstruir el objeto del tipo correcto basándose en shipment_type
-        if shipment_type == 'EXPRESS':
-            return ExpressShipment(tracking_code, sender, recipient, assigned_route)
-        elif shipment_type == 'FRAGILE':
-            return FragileShipment(tracking_code, sender, recipient, assigned_route)
+        (
+            tracking_code,
+            sender,
+            recipient,
+            current_status,
+            priority,
+            assigned_route,
+            status_history_json,
+            shipment_type,
+        ) = row
+
+        # 1) Construir el objeto del tipo correcto usando los constructores reales
+        if shipment_type == "EXPRESS":
+            shipment = ExpressShipment(tracking_code, sender, recipient)
+        elif shipment_type == "FRAGILE":
+            shipment = FragileShipment(tracking_code, sender, recipient, priority=priority)
         else:
-            return Shipment(tracking_code, sender, recipient, current_status, priority, assigned_route)
+            shipment = Shipment(tracking_code, sender, recipient, priority=priority)
+
+        # 2) Restaurar el estado interno desde los datos persistidos
+        #    (estos atributos no se pasan en el constructor, se modifican internamente)
+        shipment._current_status = current_status
+        shipment._status_history = json.loads(status_history_json)
+        shipment._assigned_route = assigned_route
+
+        return shipment
 ```
 
 **Puntos clave de ambos métodos:**
-- Siempre activa `PRAGMA foreign_keys = ON` para garantizar integridad referencial
-- Usa parámetros `?` en lugar de concatenar strings (previene inyección SQL)
-- Transforma excepciones técnicas de SQLite en excepciones de dominio
-- Usa `json.dumps()` al guardar listas (como `status_history`), y `json.loads()` al recuperar
-- Usa `shipment_type` como discriminador para reconstruir el objeto correcto (STANDARD, EXPRESS o FRAGILE)
+- Siempre activa `PRAGMA foreign_keys = ON` para garantizar integridad referencial.
+- Usa parámetros `?` en lugar de concatenar strings (previene inyección SQL).
+- Transforma excepciones técnicas de SQLite en excepciones de dominio.
+- Usa `json.dumps()` al guardar listas (como `status_history`) y `json.loads()` al recuperar.
+- El constructor de tus clases de dominio solo acepta datos de creación; el estado dinámico (estado actual, historial, ruta asignada) se restaura después asignando directamente a los atributos privados.
+- Usa `shipment_type` como discriminador para elegir la clase correcta (`Shipment`, `ExpressShipment` o `FragileShipment`).
 
 
 ## Resumen: de memoria a SQLite
 
 ### Mapeado de conceptos
 
-| Código Python (ahora) | Base de datos SQLite (futuro) | Propósito |
+| Código Python (fase actual, en memoria) | Base de datos SQLite (fase 04) | Propósito |
 |---|---|---|
 | `_shipments = {}` | Tabla `shipments` (con columna `shipment_type`) | Guardar todos los envíos persistentemente |
 | `_centers = {}` | Tabla `centers` | Guardar todos los centros persistentemente |
@@ -535,19 +578,20 @@ from infrastructure.errores import ShipmentNoEncontradoError
                │ usa
 ┌──────────────▼──────────────────────┐
 │  Application (servicios)            │
-│  - LogisticsService                 │
+│  - ShipmentService                  │
+│  - CenterService, RouteService      │
 │  - Usa repositorios                 │
 └──────────────┬──────────────────────┘
                │ usa
 ┌──────────────▼──────────────────────┐
 │  Domain (entidades + contratos)     │
 │  - Shipment, Center, Route          │
-│  - RepositorioShipments (contrato)  │
+│  - ShipmentRepository (contrato)    │
 └──────────────┬──────────────────────┘
                │ implementado por
 ┌──────────────▼──────────────────────┐
 │  Infrastructure (implementación)    │
-│  - RepositorioShipmentsSQLite       │
+│  - ShipmentRepositorySQLite         │
 │  - Lee/escribe en tablas            │
 └─────────────────────────────────────┘
 ```
@@ -556,19 +600,19 @@ from infrastructure.errores import ShipmentNoEncontradoError
 
 ## Estado de la Checklist Fase 04
 
-Siguiendo las fases de este documento se implementan los siguientes apartados de la checklist oficial de Fase 04.
+Marcamos con [x] los apartados que **este documento cubre o sirve de referencia** y con [ ] los que son **responsabilidad tuya** dentro de tu proyecto. Para los apartados pendientes puedes consultar cómo se hicieron en el proyecto modelo de la expendedora (`modelo/cepy_pd4/proyecto/04-sqlite/expendedora/`).
 
 ### Diseño e implementación del esquema de base de datos
 
-- [x] Copiar en `04-sqlite` el estado base de `03-testing` (o crear rama específica para la fase 04) *Usa expendedora como referencia*
-- [x] Diseñar las tablas SQL mapeando cada entidad de dominio a tablas con sus columnas, tipos y restricciones (`PRIMARY KEY`, `NOT NULL`, `FOREIGN KEY`) — **Fase 1-4 de este documento**
+- [ ] Copiar en `04-sqlite` el estado base de `03-testing` (o crear rama específica para la fase 04) — *Responsabilidad tuya*
+- [x] Diseñar las tablas SQL mapeando cada entidad de dominio a tablas con sus columnas, tipos y restricciones (`PRIMARY KEY`, `NOT NULL`, `FOREIGN KEY`) — **Fases 1-4 de este documento**
 - [x] Usar nombres de columnas en snake_case — **Fase 4 de este documento**
 
 ### Script de inicialización de base de datos
 
 - [x] Crear script que cree el esquema de la BD e inserte datos iniciales de prueba — **Fase 6 de este documento**
   - [x] Debe poder ejecutarse varias veces sin error — **Fase 6**
-  - [x] Crea todas las tablas respetando dependencias de claves foráneas — **Fase 5-6**
+  - [x] Crea todas las tablas respetando dependencias de claves foráneas — **Fases 5-6**
   - [x] Inserta datos iniciales para probar la aplicación — **Fase 6**
 
 ### Excepciones de dominio para persistencia
@@ -583,37 +627,49 @@ Siguiendo las fases de este documento se implementan los siguientes apartados de
 - [ ] Usar consultas SQL parametrizadas (parámetros `?`) para prevenir inyección SQL — **Fase 7**
 - [ ] Capturar excepciones SQLite (`sqlite3.IntegrityError`, `sqlite3.OperationalError`, etc.) y transformarlas en excepciones de dominio — **Fase 7**
 - [ ] Activar `PRAGMA foreign_keys = ON` al conectar para garantizar integridad referencial — **Fase 7**
-- [ ] **El flujo principal de la aplicación (menú) debe usar SOLO el repositorio SQLite para persistencia** (no usar en memoria) *Usa expendedora como referencia*
+- [ ] **El flujo principal de la aplicación (menú) debe usar SOLO el repositorio SQLite para persistencia** (no usar en memoria) — *Responsabilidad tuya*
 
 ### Repositorio en memoria (referencia, no en uso)
 
-- [ ] (**opcional**) Mantener el código del repositorio en memoria como referencia de implementación y contrato *Usa expendedora como referencia*
-- [ ] (**opcional**) Modificar `infrastructure/repositorio_memoria.py` para lanzar las **mismas excepciones de dominio** que el repositorio SQLite (útil para tests sin persistencia) *Usa expendedora como referencia*
+- [ ] (**opcional**) Mantener el código del repositorio en memoria como referencia de implementación y contrato — *Responsabilidad tuya*
+- [ ] (**opcional**) Modificar `infrastructure/repositorio_memoria.py` para lanzar las **mismas excepciones de dominio** que el repositorio SQLite (útil para tests sin persistencia) — *Responsabilidad tuya*
 
 ### Integración con SQLite en la capa de presentación
 
-- [ ] Modificar la capa de presentación para cargar datos iniciales desde la BD en lugar de desde memoria (al iniciar la aplicación) *Usa expendedora como referencia*
-- [ ] Capturar excepciones de dominio, no excepciones de `sqlite3` *Usa expendedora como referencia*
-- [ ] (*opcional*) Mostrar mensajes amigables al usuario cuando ocurran errores de persistencia *Usa expendedora como referencia*
-- [ ] No hacer imports de `sqlite3` directamente en la presentación *Usa expendedora como referencia*
+- [ ] Modificar la capa de presentación para cargar datos iniciales desde la BD en lugar de desde memoria (al iniciar la aplicación) — *Responsabilidad tuya*
+- [ ] Capturar excepciones de dominio, no excepciones de `sqlite3` — *Responsabilidad tuya*
+- [ ] (*opcional*) Mostrar mensajes amigables al usuario cuando ocurran errores de persistencia — *Responsabilidad tuya*
+- [ ] No hacer imports de `sqlite3` directamente en la presentación — *Responsabilidad tuya*
 
 ### Actualización de los tests
 
-- [ ] *(opcional)* Actualizar tests existentes para esperar excepciones de dominio en lugar de excepciones genéricas de Python *Usa expendedora como referencia*
-- [ ] Verificar que `python -m unittest` pasa con todos los tests en verde *Usa expendedora como referencia*
-- [ ] *(opcional)* Crear tests específicos para el repositorio SQLite *Usa expendedora como referencia*
+- [ ] *(opcional)* Actualizar tests existentes para esperar excepciones de dominio en lugar de excepciones genéricas de Python — *Responsabilidad tuya*
+- [ ] Verificar que `python -m unittest` pasa con todos los tests en verde — *Responsabilidad tuya*
+- [ ] *(opcional)* Crear tests específicos para el repositorio SQLite — *Responsabilidad tuya*
 
 ### Documentación
 
-- [ ] Actualizar `CHANGELOG.md` (versión `0.4.0`) con los cambios principales *Usa expendedora como referencia*
-- [ ] Actualizar `README.md` con instrucciones de cómo ejecutar el script de inicialización *Usa expendedora como referencia*
+- [ ] Actualizar `CHANGELOG.md` (versión `0.4.0`) con los cambios principales — *Responsabilidad tuya*
+- [ ] Actualizar `README.md` con instrucciones de cómo ejecutar el script de inicialización — *Responsabilidad tuya*
 - [ ] Documentar el diseño de la BD en `docs/DISEÑO_BD.md` (opcional) — *Este documento es base para completarlo*
-- [ ] (*opcional*) Documentar el contrato de excepciones en `docs/CONTRATO_EXCEPCIONES.md` (opcional) *Usa expendedora como referencia*
+- [ ] (*opcional*) Documentar el contrato de excepciones en `docs/CONTRATO_EXCEPCIONES.md` — *Responsabilidad tuya*
 
 ### Verificación final
 
-- [ ] La aplicación funciona igual desde el punto de vista del usuario (mismo menú, mismas operaciones) *Usa expendedora como referencia*
-- [ ] Los datos persisten entre ejecuciones (cierra y reabre la app, verifica que los datos están) *Usa expendedora como referencia*
-- [ ] Los tests pasan todos sin cambios de lógica de dominio *Usa expendedora como referencia*
+- [ ] La aplicación funciona igual desde el punto de vista del usuario (mismo menú, mismas operaciones) — *Responsabilidad tuya*
+- [ ] Los datos persisten entre ejecuciones (cierra y reabre la app, verifica que los datos están) — *Responsabilidad tuya*
+- [ ] Los tests pasan todos sin cambios de lógica de dominio — *Responsabilidad tuya*
+
+
+## Próximos pasos
+
+1. Lee este documento con atención, especialmente las Fases 2-4.
+2. Crea la subcarpeta `04-sqlite/` copiando el estado base de `03-testing/`.
+3. Crea la base de datos ejecutando el script de la Fase 6 (`crear_bd.py`).
+4. Crea el fichero de excepciones de dominio `infrastructure/errores.py` siguiendo el ejemplo de la Fase 7.
+5. Implementa los repositorios SQLite en `infrastructure/` (usa el código de Fase 7 como referencia y el proyecto de la expendedora como ejemplo completo).
+6. Modifica la capa de presentación para que use solo el repositorio SQLite y capture las excepciones de dominio.
+7. Actualiza los tests para esperar excepciones de dominio.
+8. Completa la documentación: `docs/DISEÑO_BD.md`, `docs/CONTRATO_EXCEPCIONES.md` (opcional), `CHANGELOG.md` (versión `0.4.0`) y `README.md` con instrucciones de `crear_bd.py`.
 
 
