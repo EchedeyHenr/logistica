@@ -155,7 +155,7 @@ En la ruta Flask (`/routes/<route_id>/quitar/<tracking_code>`) ambos parámetros
 
 ---
 
-## Puntos de atención
+## Advertencias
 
 ### Herencia Shipment → ExpressShipment / FragileShipment
 
