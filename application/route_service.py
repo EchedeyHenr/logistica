@@ -326,3 +326,28 @@ class RouteService:
         for shipment in shipments:
             self._shipment_repo.update(shipment)
         self._center_repo.update(route.destination_center)
+
+
+    def list_shipments_in_route(self, route_id):
+        """
+        Obtiene una lista de los códigos de seguimiento de los envíos asignados a una ruta específica.
+
+        Caso de uso: Útil para consultar el inventario de una ruta desde la API.
+
+        Args:
+            route_id (str): ID de la ruta a consultar.
+
+        Returns:
+            List[str]: Lista de códigos de seguimiento de los envíos en la ruta.
+
+        Raises:
+            ValueError: Si el ID está vacío.
+            EntityNotFoundError: Si la ruta no existe.
+        """
+        if not route_id.strip():
+            raise ValueError("El ID de la ruta no puede estar vacío.")
+
+        route = self._route_repo.get_by_route_id(route_id)
+        
+        # Delegar a la ruta para obtener sus envíos
+        return route.list_shipments()

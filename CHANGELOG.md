@@ -5,6 +5,26 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-05-04 (Fase 05: Capa de Presentación Flask)
+
+### Added
+- **API Flask (`presentation/app.py`)**:
+  - Nueva capa de presentación implementada con Flask para interactuar con el dominio a través de HTTP.
+  - Endpoints listos para gestionar envíos, centros logísticos y rutas.
+  - Navegabilidad en la ruta raíz (`/`) con hipervínculos a los principales recursos.
+  - Patrón "Actúa → Redirige" implementado en las rutas de creación, asignación y cambio de estados para redirigir tras una operación.
+  - Uso explícito de tipado en los parámetros de ruta de Flask (`<string:...>`).
+- **Manejo global de excepciones API**:
+  - Mapeo de `EntityNotFoundError` a 404 Not Found.
+  - Mapeo de `EntityAlreadyExistsError` a 409 Conflict.
+  - Mapeo de `ValueError` a 400 Bad Request.
+  - Mapeo de `PersistenceError` a 500 Internal Server Error.
+- **Servicio Extendiendo Inventario**:
+  - Nuevo método `list_shipments_in_route()` en `RouteService` para consultar los bultos asociados a una ruta específica.
+
+### Changed
+- **Formateo Visual**: Modificados los listados devueltos por los servicios en `app.py` para visualizarse con saltos de línea HTML `<br>`.
+
 ## [0.4.0] - 2026-04-14 (Fase 04: Persistencia con SQLite)
 
 ### Added
@@ -187,6 +207,7 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 | 0.2.0 | 2026-01-28 | ✅ Completado | Documentación completa del sistema |
 | 0.3.0 | 2026-03-03 | ✅ Completado | Pruebas unitarias y resoluciones |
 | 0.4.0 | 2026-04-14 | ✅ Completado | Persistencia de datos en SQLite |
+| 0.5.0 | 2026-05-04 | ✅ Completado | Capa de Presentación con API Flask |
 | 1.0.0 | Por planificar | 📅 Planeado | Versión estable para producción |
 
 ---

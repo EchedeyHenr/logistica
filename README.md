@@ -167,11 +167,18 @@ Clone the project from GitHub using HTTPS:
 git clone https://github.com/EchedeyHenr/logistica.git
 ```
 
-**2. Run the application**
+**2. Run the application (Console)**
 
 ```bash
 python -m logistica.presentation.menu
 ```
+
+**3. Run the application (Flask API)**
+
+```bash
+python -m logistica.presentation.app
+```
+Access `http://127.0.0.1:5000/` in your browser.
 
 #### Running Tests:
 
@@ -264,6 +271,7 @@ Every change in this project is handled through a branch-based workflow. Feature
  ┣ 📜main.py                     # Application entry point; initializes repositories, services, and starts the interface.
  ┣ 📂presentation
  ┃ ┣ 📜__init__.py
+ ┃ ┣ 📜app.py                    # Flask Web API exposing the system via HTTP.
  ┃ ┗ 📜menu.py                   # Console-based interface that allows users to interact with the system.
  ┣ 📂application
  ┃ ┣ 📜__init__.py
@@ -427,11 +435,18 @@ Clona el proyecto desde GitHub usando HTTPS:
 git clone https://github.com/EchedeyHenr/logistica.git
 ```
 
-**2. Ejecuta la aplicación**
+**2. Ejecuta la aplicación (Consola)**
 
 ```bash
 python -m logistica.presentation.menu
 ```
+
+**3. Ejecuta la aplicación (API Flask)**
+
+```bash
+python -m logistica.presentation.app
+```
+Accede a `http://127.0.0.1:5000/` en tu navegador.
 
 #### Ejecución de test:
 
@@ -525,6 +540,7 @@ El siguiente diagrama de secuencia muestra cómo fluye una operación de envío 
  ┣ 📜main.py                     # Punto de entrada de la aplicación; inicializa repositorios, servicios y lanza la interfaz.
  ┣ 📂presentation
  ┃ ┣ 📜__init__.py
+ ┃ ┣ 📜app.py                    # API Web Flask que expone el sistema por HTTP.
  ┃ ┗ 📜menu.py                   # Interfaz por consola que permite al usuario interactuar con el sistema.
  ┣ 📂application
  ┃ ┣ 📜__init__.py
