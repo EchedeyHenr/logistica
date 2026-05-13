@@ -23,13 +23,21 @@ git clone https://github.com/EchedeyHenr/logistica.git
 cd logistica
 ```
 
-### 2. Ejecutar Directamente (sin instalación)
+### 2. Ejecutar la Interfaz de Consola
 
 Desde la raíz del proyecto:
 ```bash
 python -m logistica.presentation.menu
 ```
 > **Nota de Inicialización SQLite**: Al ejecutarse por primera vez, el sistema autodetecta su inexistencia e inicializará localmente el archivo `logistica.db` mediante el script interno `crear_bd.py`.
+
+### 3. Ejecutar la API Flask Web
+
+Puedes levantar el servidor web embebido de Flask para interactuar con el dominio vía HTTP. Desde la raíz del proyecto:
+```bash
+python -m logistica.presentation.app
+```
+Una vez iniciado, abre un navegador web y accede a [http://127.0.0.1:5000/](http://127.0.0.1:5000/) para ver la página de bienvenida con los enlaces a las rutas principales (`/shipments`, `/centers`, `/routes`).
 
 ## 🧪 Ejecutar los Tests y Cobertura
 
