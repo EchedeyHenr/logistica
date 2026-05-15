@@ -37,7 +37,9 @@ Puedes levantar el servidor web embebido de Flask para interactuar con el domini
 ```bash
 python -m logistica.presentation.app
 ```
-Una vez iniciado, abre un navegador web y accede a [http://127.0.0.1:5000/](http://127.0.0.1:5000/) para ver la página de bienvenida con los enlaces a las rutas principales (`/shipments`, `/centers`, `/routes`).
+Una vez iniciado, abre un navegador web y accede a [http://127.0.0.1:5000/](http://127.0.0.1:5000/) para ver la página de bienvenida con los enlaces a las rutas principales (`/shipments`, `/centers`, `/routes`), puedes visitar también `/ayuda` para acceder a un listado de todas las rutas disponibles.
+
+El fichero `logistica.log` se genera junto al comando que lanza el servidor (nivel INFO, formato timestamp + método + ruta). No se incluye en la entrega — es ruido generado por tus pruebas.
 
 ## 🧪 Ejecutar los Tests y Cobertura
 

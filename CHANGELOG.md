@@ -5,6 +5,27 @@ Todos los cambios notables en este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-05-15 (Fase 06: Observabilidad y Manejadores Globales)
+
+### Added
+- **Observabilidad y Logs (`presentation/app.py`)**:
+  - Implementación de logging de peticiones mediante el decorador `@app.before_request`, generando el archivo local `logistica.log` al arrancar.
+  - Ruta técnica `/ayuda` que lista de forma dinámica todas las rutas registradas en la aplicación mediante `app.url_map`.
+  - Inclusión de una tabla de equivalencias entre `menu.py` y `app.py` en los comentarios iniciales del archivo.
+- **Configuración del Repositorio (`.gitignore`)**:
+  - Añadida la regla `*.log` para evitar el versionado accidental de archivos de registro en el repositorio.
+- **Documentación del Proyecto (`README.md`)**:
+  - Incorporación de una guía detallada de **Rutas Disponibles** (Available Routes) categorizadas por Lectura, Transacción, Administración y Utilidades.
+  - Inclusión de una nota aclaratoria sobre la generación automática y el propósito del archivo `logistica.log`.
+
+### Changed
+- **Manejo Global de Excepciones**:
+  - Modificados los manejadores globales para homogeneizar las respuestas visuales en formato HTML y mantener la coherencia estética en las páginas de error.
+- **Guía de Ejecución (`EJECUCION.md`)**:
+  - Actualización del apartado "Ejecutar la API Flask Web" para incluir la nueva ruta `/ayuda` como herramienta de inspección.
+  - Se ha añadido la especificación del formato del archivo `logistica.log`: nivel `INFO` con estructura `timestamp [levelname] message` (registrando método HTTP y ruta).
+
+
 ## [0.5.0] - 2026-05-04 (Fase 05: Capa de Presentación Flask)
 
 ### Added

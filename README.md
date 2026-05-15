@@ -178,7 +178,36 @@ python -m logistica.presentation.menu
 ```bash
 python -m logistica.presentation.app
 ```
-Access `http://127.0.0.1:5000/` in your browser.
+Access `http://127.0.0.1:5000/` in your browser. Available Routes
+
+**Read:**
+- `/` — Links to the main routes.
+- `/shipments` — Lists all registered shipments.
+- `/shipments/<tracking_code>` — Full shipment details and status history.
+- `/centers` — Lists all logistics centers.
+- `/centers/<center_id>/shipments` — Shipments physically located at a specific center.
+- `/routes` — Lists all logistics routes and their current status.
+- `/routes/<route_id>/shipments` — Lists the shipment codes assigned to a route.
+
+**Transaction (Shipment & Route Management):**
+- `/shipments/<tracking_code>/status/<new_status>` — Updates the status (REGISTERED, IN_TRANSIT, DELIVERED).
+- `/shipments/<tracking_code>/priority/increase` — Increases the shipment's priority level.
+- `/shipments/<tracking_code>/priority/decrease` — Reduces the shipment's priority level.
+- `/routes/<route_id>/assign/<tracking_code>` — Links a shipment to a transport route.
+- `/routes/<route_id>/remove/<tracking_code>` — Unlinks a shipment from its assigned route.
+- `/routes/<route_id>/dispatch` — Changes the route status to "in transit."
+- `/routes/<route_id>/complete` — Finalizes the route and marks deliveries.
+
+**Administration:**
+- `/shipments/new/<tracking_code>/<type>/<sender>/<recipient>` — Registers a new shipment (default priority 1).
+- `/shipments/new/<tracking_code>/<type>/<int:priority>/<sender>/<recipient>` — Registers a shipment with a specific priority.
+- `/centers/new/<center_id>/<name>/<location>` — Registers a new logistics center in the system.
+- `/routes/new/<route_id>/<origin>/<destination>/<type>` — Creates a new route between two centers.
+
+**Features**:
+- `/ayuda` — Technical inspection: dynamically lists all registered routes.
+
+When the server starts, `logistica.log` is automatically created in the folder from which you run the command. It contains one line for each HTTP request received.
 
 #### Running Tests:
 
@@ -446,7 +475,36 @@ python -m logistica.presentation.menu
 ```bash
 python -m logistica.presentation.app
 ```
-Accede a `http://127.0.0.1:5000/` en tu navegador.
+Accede a `http://127.0.0.1:5000/` en tu navegador. Rutas disponibles
+
+**Lectura:**
+- `/` — Enlaces a las rutas principales.
+- `/shipments` — Lista todos los envíos registrados.
+- `/shipments/<tracking_code>` — Detalle completo de un envío e historial de estados.
+- `/centers` — Lista todos los centros logísticos.
+- `/centers/<center_id>/shipments` — Envíos ubicados físicamente en un centro específico.
+- `/routes` — Lista todas las rutas logísticas y su estado actual.
+- `/routes/<route_id>/shipments` — Lista los códigos de envío asignados a una ruta.
+
+**Transacción (Gestión de Envíos y Rutas):**
+- `/shipments/<tracking_code>/estado/<nuevo_estado>` — Actualiza el estado (REGISTERED, IN_TRANSIT, DELIVERED).
+- `/shipments/<tracking_code>/prioridad/aumentar` — Incrementa el nivel de prioridad del envío.
+- `/shipments/<tracking_code>/prioridad/disminuir` — Reduce el nivel de prioridad del envío.
+- `/routes/<route_id>/asignar/<tracking_code>` — Vincula un envío a una ruta de transporte.
+- `/routes/<route_id>/quitar/<tracking_code>` — Desvincula un envío de su ruta asignada.
+- `/routes/<route_id>/despachar` — Cambia el estado de la ruta a "en tránsito".
+- `/routes/<route_id>/completar` — Finaliza la ruta y marca la entrega.
+
+**Administración**:
+- `/shipments/nuevo/<tracking_code>/<tipo>/<sender>/<recipient>` — Registro de nuevo envío (prioridad 1 por defecto).
+- `/shipments/nuevo/<tracking_code>/<tipo>/<int:priority>/<sender>/<recipient>` — Registro con prioridad específica.
+- `/centers/nuevo/<center_id>/<nombre>/<ubicación>` — Alta de un nuevo centro logístico en el sistema.
+- `/routes/nuevo/<route_id>/<origen>/<destino>/<tipo>` — Creación de una nueva ruta entre dos centros.
+
+**Utilidades**:
+- `/ayuda` — Inspección técnica: lista todas las rutas registradas dinámicamente.
+
+Al arrancar el servidor se crea automáticamente `logistica.log` en la carpeta desde la que lances el comando. Contiene una línea por cada petición HTTP.
 
 #### Ejecución de test:
 
